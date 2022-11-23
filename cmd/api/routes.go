@@ -10,5 +10,8 @@ func (app *application) routes() *httprouter.Router {
 
 	router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
 
+	router.HandlerFunc(http.MethodGet, "/v1/entity/:id", app.getOneEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/entities", app.getAllEntities)
+
 	return router
 }
