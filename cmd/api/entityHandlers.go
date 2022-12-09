@@ -3,12 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	"github.com/ukubenet/metadata-repository/models"
+	"net/http"
 )
 
 func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
@@ -22,19 +19,23 @@ func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 	id := params.ByName("id")
-
-	tempId := uuid.New()
 	app.logger.Println("id is:", id)
-	app.logger.Println("uuid is:", tempId.String())
 
-	entity := models.Entity{
-		UUID:       tempId.String(),
-		EntityName: "Some entity",
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
-	}
+	entity, err := app.models.DB.Get(id)
 
-	err := app.writeJSON(w, http.StatusOK, entity, "entity")
+	// just a sample how to generate a new UUID
+	tempId := uuid.New()
+	app.logger.Println("generated uuid is:", tempId.String())
+
+	// todo: remove Entity sample.
+	//entity := models.Entity{
+	//	UUID:       tempId.String(),
+	//	EntityName: "Some entity",
+	//	CreatedAt:  time.Now(),
+	//	UpdatedAt:  time.Now(),
+	//}
+
+	err = app.writeJSON(w, http.StatusOK, entity, "entity")
 	if err != nil {
 		app.logger.Print(errors.New("invalid id parameter"))
 		app.errorJSON(w, err)

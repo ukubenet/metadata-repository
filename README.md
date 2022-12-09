@@ -29,3 +29,10 @@ go get -u github.com/go-redis/redis
 ```shell
 go get github.com/google/uuid
 ```
+
+### Postgres Database driver
+* Docs: https://github.com/lib/pq
+* Install:
+```shell
+go get -u github.com/lib/pq
+```
