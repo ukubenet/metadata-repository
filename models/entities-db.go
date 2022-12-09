@@ -31,7 +31,7 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 		return nil, err
 	}
 
-	query = `select	a.uuid, a.name, t.name, a.entity_uuid
+	query = `select	a.uuid, a.name, t.name, a.entity_uuid, a.created_at, a.updated_at
 			from attribute a
 			inner join entity e on a.entity_uuid = e.uuid
 			inner join type t on t.uuid = a.type_uuid
@@ -46,8 +46,10 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 		err := rows.Scan(
 			&attr.UUID,
 			&attr.Name,
-			&attr.Type.Name,
+			&attr.Type,
 			&attr.EntityUuid,
+			&attr.CreatedAt,
+			&attr.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -87,7 +89,7 @@ func (m *DBModel) All() ([]*Entity, error) {
 			return nil, err
 		}
 
-		attributeQuery := `select a.uuid, a.name, t.name, a.entity_uuid
+		attributeQuery := `select a.uuid, a.name, t.name, a.entity_uuid, a.created_at, a.updated_at
 			from attribute a
 			inner join entity e on a.entity_uuid = e.uuid
 			inner join type t on t.uuid = a.type_uuid
@@ -101,8 +103,10 @@ func (m *DBModel) All() ([]*Entity, error) {
 			err := attributeRows.Scan(
 				&attr.UUID,
 				&attr.Name,
-				&attr.Type.Name,
+				&attr.Type,
 				&attr.EntityUuid,
+				&attr.CreatedAt,
+				&attr.UpdatedAt,
 			)
 			if err != nil {
 				return nil, err
