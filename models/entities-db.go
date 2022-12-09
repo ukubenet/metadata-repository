@@ -61,6 +61,59 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 }
 
 // All returns all entities and error, if any
-func (m *DBModel) All(id int) ([]*Entity, error) {
-	return nil, nil
+func (m *DBModel) All() ([]*Entity, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select uuid, entity_name, created_at, updated_at from entity order by entity_name`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entities []*Entity
+
+	for rows.Next() {
+		var entity Entity
+		err := rows.Scan(
+			&entity.UUID,
+			&entity.EntityName,
+			&entity.CreatedAt,
+			&entity.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		attributeQuery := `select a.uuid, a.name, t.name, a.entity_uuid
+			from attribute a
+			inner join entity e on a.entity_uuid = e.uuid
+			inner join type t on t.uuid = a.type_uuid
+			where a.entity_uuid = $1
+    `
+		attributeRows, _ := m.DB.QueryContext(ctx, attributeQuery, entity.UUID)
+
+		var attributes []Attribute
+		for attributeRows.Next() {
+			var attr Attribute
+			err := attributeRows.Scan(
+				&attr.UUID,
+				&attr.Name,
+				&attr.Type.Name,
+				&attr.EntityUuid,
+			)
+			if err != nil {
+				return nil, err
+			}
+			attributes = append(attributes, attr)
+		}
+		attributeRows.Close()
+
+		entity.Attributes = attributes
+		entities = append(entities, &entity)
+	}
+
+	return entities, nil
 }

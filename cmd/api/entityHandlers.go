@@ -19,21 +19,16 @@ func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 	id := params.ByName("id")
-	app.logger.Println("id is:", id)
 
 	entity, err := app.models.DB.Get(id)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
 
 	// just a sample how to generate a new UUID
 	tempId := uuid.New()
 	app.logger.Println("generated uuid is:", tempId.String())
-
-	// todo: remove Entity sample.
-	//entity := models.Entity{
-	//	UUID:       tempId.String(),
-	//	EntityName: "Some entity",
-	//	CreatedAt:  time.Now(),
-	//	UpdatedAt:  time.Now(),
-	//}
 
 	err = app.writeJSON(w, http.StatusOK, entity, "entity")
 	if err != nil {
@@ -50,5 +45,31 @@ func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
+	entities, err := app.models.DB.All()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, entities, "entities")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) deleteEntity(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) insertEntity(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) updateEntity(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
 
 }
