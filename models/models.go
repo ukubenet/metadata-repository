@@ -29,7 +29,7 @@ type Entity struct {
 type Attribute struct {
 	UUID       string    `json:"uuid"`
 	Name       string    `json:"name"`
-	Type       Type      `json:"-"`
+	Type       string    `json:"type"`
 	EntityUuid string    `json:"entityUuid"`
 	CreatedAt  time.Time `json:"createdAt"`
 	UpdatedAt  time.Time `json:"updatedAt"`
