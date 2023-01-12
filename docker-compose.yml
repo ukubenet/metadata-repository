@@ -7,23 +7,23 @@ services:
       - '6379:6379'
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX4HwVmsxKPCDjwMtyKVge5oLd9t42
     volumes:
-#      - cache:/data
+      # - cache:/data
       - ./docker/redis/data:/data
 
-  # uncomment the following if PostgreSQL db is needed
-#  db:
-#    image: postgres:alpine
-#    environment:
-#      - POSTGRES_USER=ukubenet
-#      - POSTGRES_PASSWORD=p@ssWord
-#      - POSTGRES_DB=metadata
-#    ports:
-#      - "5432:5432"
-#    volumes:
-#      - postgres-db:/var/lib/postgresql/data
-#      - ./docker/db/data:/var/lib/postgresql/data
+  # comment the following if PostgreSQL db is not needed
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=ukubenet
+      - POSTGRES_PASSWORD=p@ssWord
+      - POSTGRES_DB=metadata
+    ports:
+      - "5432:5432"
+    volumes:
+      # - postgres-db:/var/lib/postgresql/data
+      - ./docker/db/data:/var/lib/postgresql/data
 
 volumes:
-#  postgres-db:
+  postgres-db:
   cache:
 #    driver: local

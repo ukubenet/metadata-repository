@@ -7,4 +7,5 @@ require (
 	github.com/golang/gddo v0.0.0-20210115222349-20d68f94ee1f
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
+	github.com/lib/pq v1.10.7 // indirect
 )
