@@ -13,6 +13,7 @@ func (app *application) routes() *httprouter.Router {
 
 	router.HandlerFunc(http.MethodGet, "/v1/entity/:id", app.getOneEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/entities", app.getAllEntities)
+	router.HandlerFunc(http.MethodPut, "/v1/entity", app.putEntity)
 
 	return router
 }
