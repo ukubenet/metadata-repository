@@ -8,6 +8,8 @@ import (
 	"mime"
 	"net/http"
 	"strings"
+
+	"github.com/ukubenet/metadata-repository/parser/encoding"
 )
 
 type (
@@ -167,4 +169,25 @@ func parseAccept(accept string) []string {
 		parts[i] = part
 	}
 	return parts
+}
+
+// Encoders/Decoders will be called in the order
+// they are registered. The setup below:
+// Request ->
+// 1. Query Strings
+// 2. Json
+// 3. Xml
+// Response ->
+// 1. Json
+// 2. Xml
+// Notice that the Query codec only provides a decoder,
+// so it will not be added to response chain
+func CreateFactory() *Factory {
+	factory := NewFactory()
+
+	factory.Use(encoding.Query())
+	factory.Use(encoding.JSON())
+	factory.Use(encoding.XML())
+
+	return factory
 }

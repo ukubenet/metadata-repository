@@ -3,15 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-<<<<<<< HEAD
-	"github.com/ukubenet/metadata-repository/models"
+
 	parcel "github.com/ukubenet/metadata-repository/parser"
 	"github.com/ukubenet/metadata-repository/parser/encoding"
-=======
-	"net/http"
->>>>>>> origin/main
 )
 
 func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
