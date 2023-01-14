@@ -3,9 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
+
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
-	"net/http"
+
+	"github.com/ukubenet/metadata-repository/models"
+	parcel "github.com/ukubenet/metadata-repository/parser"
 )
 
 func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
@@ -72,4 +76,13 @@ func (app *application) updateEntity(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
 
+}
+
+func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
+	factory := parcel.CreateFactory()
+	p := factory.Parcel(rw, r)
+
+	entity := new(models.Entity)
+	p.Decode(entity)
+	p.Encode(http.StatusCreated, entity)
 }
