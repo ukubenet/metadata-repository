@@ -3,10 +3,9 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"net/http"
-
 	"github.com/google/uuid"
 	"github.com/julienschmidt/httprouter"
+	"net/http"
 
 	"github.com/ukubenet/metadata-repository/models"
 	parcel "github.com/ukubenet/metadata-repository/parser"
@@ -50,6 +49,38 @@ func (app *application) getOneEntity(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	entities, err := app.models.DB.All()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, entities, "entities")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) getAllAttributes(w http.ResponseWriter, r *http.Request) {
+	attributes, err := app.models.DB.AttributesAll()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, attributes, "attributes")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) getAllEntitiesByAttribute(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	attributeID := params.ByName("attribute_id")
+
+	entities, err := app.models.DB.All(attributeID)
 	if err != nil {
 		app.errorJSON(w, err)
 		return
