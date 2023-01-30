@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -63,11 +64,15 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 }
 
 // All returns all entities and error, if any
-func (m *DBModel) All() ([]*Entity, error) {
+func (m *DBModel) All(attribute ...string) ([]*Entity, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select uuid, entity_name, created_at, updated_at from entity order by entity_name`
+	where := ""
+	if len(attribute) > 0 {
+		where = fmt.Sprintf("where uuid in (select entity_uuid from attribute where uuid = '%s')", attribute[0])
+	}
+	query := fmt.Sprintf(`select uuid, entity_name, created_at, updated_at from entity %s order by entity_name`, where)
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -120,4 +125,34 @@ func (m *DBModel) All() ([]*Entity, error) {
 	}
 
 	return entities, nil
+}
+
+func (m *DBModel) AttributesAll() ([]*Attribute, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select uuid, name, created_at from attribute order by name`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var attributes []*Attribute
+
+	for rows.Next() {
+		var a Attribute
+		err := rows.Scan(
+			&a.UUID,
+			&a.Name,
+			&a.CreatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		attributes = append(attributes, &a)
+	}
+
+	return attributes, nil
 }
