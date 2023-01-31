@@ -46,16 +46,16 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
-	db, err := openDB(cfg)
-	if err != nil {
-		logger.Fatal(err)
-	}
-	defer db.Close()
+	// db, err := openDB(cfg)
+	// if err != nil {
+	// 	logger.Fatal(err)
+	// }
+	// defer db.Close()
 
 	app := &application{
 		config: cfg,
 		logger: logger,
-		models: models.NewModels(db),
+		// models: models.NewModels(db),
 	}
 
 	srv := &http.Server{
@@ -68,7 +68,7 @@ func main() {
 
 	logger.Println("Starting server on port", cfg.port)
 
-	err = srv.ListenAndServe()
+	err := srv.ListenAndServe()
 	if err != nil {
 		log.Println(err)
 	}

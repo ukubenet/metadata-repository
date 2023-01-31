@@ -18,7 +18,6 @@ func NewModels(db *sql.DB) Models {
 }
 
 type Entity struct {
-	UUID           string      `json:"uuid"`
 	EntityName     string      `json:"entityName"`
 	SearchCriteria []Attribute `json:"-"`
 	Attributes     []Attribute `json:"attributes"`
@@ -27,27 +26,15 @@ type Entity struct {
 }
 
 type Attribute struct {
-	UUID       string    `json:"uuid"`
-	Name       string    `json:"name"`
-	Type       string    `json:"type"`
-	EntityUuid string    `json:"entityUuid"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type Type struct {
-	UUID         string `json:"uuid"`
 	Name         string `json:"name"`
 	DataType     string `json:"dataType"`
 	NotNull      bool   `json:"notNull"`
 	DefaultValue string `json:"defaultValue"`
-}
-
-type EntityAttribute struct {
-	UUID        string    `json:"uuid"`
-	EntityId    string    `json:"entityId"`
-	AttributeId string    `json:"attributeId"`
-	Attribute   Attribute `json:"attribute"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
 }
