@@ -23,7 +23,6 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 	var entity Entity
 
 	err := row.Scan(
-		&entity.UUID,
 		&entity.EntityName,
 		&entity.CreatedAt,
 		&entity.UpdatedAt,
@@ -45,10 +44,8 @@ func (m *DBModel) Get(id string) (*Entity, error) {
 	for rows.Next() {
 		var attr Attribute
 		err := rows.Scan(
-			&attr.UUID,
 			&attr.Name,
 			&attr.Type,
-			&attr.EntityUuid,
 			&attr.CreatedAt,
 			&attr.UpdatedAt,
 		)
@@ -85,7 +82,6 @@ func (m *DBModel) All(attribute ...string) ([]*Entity, error) {
 	for rows.Next() {
 		var entity Entity
 		err := rows.Scan(
-			&entity.UUID,
 			&entity.EntityName,
 			&entity.CreatedAt,
 			&entity.UpdatedAt,
@@ -94,22 +90,20 @@ func (m *DBModel) All(attribute ...string) ([]*Entity, error) {
 			return nil, err
 		}
 
-		attributeQuery := `select a.uuid, a.name, t.name, a.entity_uuid, a.created_at, a.updated_at
+		attributeQuery := `select a.name, t.name, a.created_at, a.updated_at
 			from attribute a
 			inner join entity e on a.entity_uuid = e.uuid
 			inner join type t on t.uuid = a.type_uuid
 			where a.entity_uuid = $1
     `
-		attributeRows, _ := m.DB.QueryContext(ctx, attributeQuery, entity.UUID)
+		attributeRows, _ := m.DB.QueryContext(ctx, attributeQuery, entity.EntityName)
 
 		var attributes []Attribute
 		for attributeRows.Next() {
 			var attr Attribute
 			err := attributeRows.Scan(
-				&attr.UUID,
 				&attr.Name,
 				&attr.Type,
-				&attr.EntityUuid,
 				&attr.CreatedAt,
 				&attr.UpdatedAt,
 			)
