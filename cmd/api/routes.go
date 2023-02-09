@@ -14,6 +14,7 @@ func (app *application) routes() *httprouter.Router {
 	router.HandlerFunc(http.MethodGet, "/v1/entity/:name", app.getOneEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/entities", app.getAllEntities)
 	router.HandlerFunc(http.MethodPut, "/v1/entity", app.putEntity)
+	router.HandlerFunc(http.MethodDelete, "/v1/entity/:name", app.deleteEntity)
 
 	return router
 }

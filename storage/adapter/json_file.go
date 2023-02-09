@@ -2,11 +2,15 @@ package adapter
 
 import (
 	"encoding/json"
+	"io/fs"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/ukubenet/metadata-repository/models"
 )
+
+const Ext string = ".json"
 
 type (
 	// JSONCodec is a JSON implementation
@@ -34,7 +38,7 @@ func JSONIndent(amt int) *JSONCodec {
 // Read entity metadate from a json file
 func (*JSONCodec) Read(entityName string, candidate *models.Entity) (err error) {
 
-	file, err := os.Open(entityName + ".json")
+	file, err := os.Open(entityName + Ext)
 	if err != nil {
 		return
 	}
@@ -66,7 +70,30 @@ func (jc *JSONCodec) Put(candidate *models.Entity) (err error) {
 		return
 	}
 
-	os.WriteFile(candidate.EntityName+".json", output, 0644)
+	os.WriteFile(candidate.EntityName+Ext, output, 0644)
+
+	return
+}
+
+// Delete a json file containing entity metadata
+func (*JSONCodec) Delete(entityName string) (err error) {
+	err = os.Remove(entityName + Ext)
+	return
+}
+
+// List json files containing entity metadata
+func (*JSONCodec) List(list *[]string) (err error) {
+	root, err := os.Getwd()
+	filepath.WalkDir(root, func(path string, info fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		// @todo pass const Ext below instead of ".json" string
+		if filepath.Ext(info.Name()) == ".json" {
+			*list = append(*list, path[len(root)+1:len(path)-5])
+		}
+		return nil
+	})
 
 	return
 }

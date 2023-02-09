@@ -38,3 +38,18 @@ func TestJsonReplacer(t *testing.T) {
 
 	inserter.Put(candidate)
 }
+
+func TestJsonLister(t *testing.T) {
+	lister := JSON()
+	list := []string{}
+
+	lister.List(&list)
+
+	if len(list) != 1 {
+		t.Fail()
+	}
+
+	if list[0] != "test/Test" {
+		t.Fail()
+	}
+}
