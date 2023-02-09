@@ -2,8 +2,8 @@ package main
 
 import (
 	"net/http"
-
 	"github.com/julienschmidt/httprouter"
+  
 	"github.com/ukubenet/metadata-repository/models"
 	parcel "github.com/ukubenet/metadata-repository/parser"
 	storage "github.com/ukubenet/metadata-repository/storage"
@@ -35,6 +35,38 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	parcel := output.Parcel(w, r)
 
 	parcel.Encode(http.StatusOK, list)
+}
+
+func (app *application) getAllAttributes(w http.ResponseWriter, r *http.Request) {
+	attributes, err := app.models.DB.AttributesAll()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, attributes, "attributes")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) getAllEntitiesByAttribute(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	attributeID := params.ByName("attribute_id")
+
+	entities, err := app.models.DB.All(attributeID)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, entities, "entities")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
 }
 
 func (app *application) deleteEntity(w http.ResponseWriter, r *http.Request) {
