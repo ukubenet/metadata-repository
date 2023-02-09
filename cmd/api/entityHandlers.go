@@ -26,17 +26,15 @@ func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
-	entities, err := app.models.DB.All()
-	if err != nil {
-		app.errorJSON(w, err)
-		return
-	}
+	storage := storage.CreateFactory()
+	adapter := storage.CreateAdapter()
+	list := []string{}
+	adapter.List(&list)
 
-	err = app.writeJSON(w, http.StatusOK, entities, "entities")
-	if err != nil {
-		app.errorJSON(w, err)
-		return
-	}
+	output := parcel.CreateFactory()
+	parcel := output.Parcel(w, r)
+
+	parcel.Encode(http.StatusOK, list)
 }
 
 func (app *application) getAllAttributes(w http.ResponseWriter, r *http.Request) {
@@ -72,19 +70,14 @@ func (app *application) getAllEntitiesByAttribute(w http.ResponseWriter, r *http
 }
 
 func (app *application) deleteEntity(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	name := params.ByName("name")
 
-}
+	storage := storage.CreateFactory()
+	adapter := storage.CreateAdapter()
+	adapter.Delete(name)
 
-func (app *application) insertEntity(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (app *application) updateEntity(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
-
+	w.WriteHeader(http.StatusOK)
 }
 
 func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {

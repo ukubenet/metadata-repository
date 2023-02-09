@@ -48,3 +48,43 @@ func TestReplacer(t *testing.T) {
 		t.Fatal("Attributes", entity.Attributes)
 	}
 }
+
+func TestEraser(t *testing.T) {
+	entity := new(models.Entity)
+	name := "test/Test"
+	entityToDelete := "test/EntityToDelete"
+
+	factory := CreateFactory()
+	adapter := factory.CreateAdapter()
+	adapter.Read(name, entity)
+	entity.EntityName = entityToDelete
+	adapter.Put(entity)
+
+	err := adapter.Read(entityToDelete, entity)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	adapter.Delete(entityToDelete)
+
+	err = adapter.Read(entityToDelete, entity)
+	if err == nil {
+		t.Fatal(err)
+	}
+}
+
+func TestLister(t *testing.T) {
+	factory := CreateFactory()
+	adapter := factory.CreateAdapter()
+	list := []string{}
+	adapter.List(&list)
+
+	if len(list) != 2 {
+		t.Fatal("List quantity", len(list))
+	}
+
+	if list[1] != "test/Test" {
+		t.Fatal("List[1] is ", list[1])
+	}
+
+}
