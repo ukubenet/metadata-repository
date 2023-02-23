@@ -17,7 +17,11 @@ func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 
 	dbReader := storage.CreateFactory()
 	adapter := dbReader.CreateAdapter()
-	adapter.Read(name, entity)
+	err := adapter.Read(name, entity)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	output := parcel.CreateFactory()
 	parcel := output.Parcel(rw, r)
@@ -30,7 +34,11 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
 	list := []string{}
-	adapter.List(&list)
+	err := adapter.List(&list)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	output := parcel.CreateFactory()
 	parcel := output.Parcel(w, r)
@@ -48,7 +56,11 @@ func (app *application) deleteEntity(w http.ResponseWriter, r *http.Request) {
 
 	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
-	adapter.Delete(name)
+	err := adapter.Delete(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 }
@@ -58,11 +70,27 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 
 	factoryReader := parcel.CreateFactory()
 	parcelReader := factoryReader.Parcel(rw, r)
-	parcelReader.Decode(entity)
+	err := parcelReader.Decode(entity)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if entity.EntityName == "" {
+		http.Error(rw, "Entity name not defined", http.StatusBadRequest)
+		return
+	}
+	if len(entity.Attributes) == 0 {
+		http.Error(rw, "Entity attributes not defined", http.StatusBadRequest)
+		return
+	}
 
 	factoryWriter := storage.CreateFactory()
 	adapter := factoryWriter.CreateAdapter()
-	adapter.Put(entity)
+	err = adapter.Put(entity)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	rw.WriteHeader(http.StatusCreated)
 }
