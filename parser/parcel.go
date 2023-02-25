@@ -108,6 +108,8 @@ func (p *Parcel) Encode(code int, c Candidate) error {
 		p.RW.WriteHeader(code)
 		return encoder.Encode(p.RW, c)
 	} else {
+		http.Error(p.RW, "Response was not written: No encoder indicated a written response", http.StatusBadRequest)
+
 		return ResponseNotWrittenError
 	}
 }
