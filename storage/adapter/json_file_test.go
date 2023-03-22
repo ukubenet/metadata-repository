@@ -1,13 +1,22 @@
 package adapter
 
 import (
+	"os"
 	"testing"
 
 	"github.com/ukubenet/metadata-repository/models"
 )
 
+var path string
+
+func TestMain(m *testing.M) {
+	path, _ = os.Getwd()
+	path += "/"
+	m.Run()
+}
+
 func TestJsonReader(t *testing.T) {
-	reader := JSON()
+	reader := JSON(path)
 
 	candidate := new(models.Entity)
 
@@ -26,7 +35,7 @@ func TestJsonReader(t *testing.T) {
 }
 
 func TestJsonReplacer(t *testing.T) {
-	inserter := JSON()
+	inserter := JSON(path)
 
 	var candidate *models.Entity = &models.Entity{
 		EntityName: "test/Test",
@@ -40,7 +49,7 @@ func TestJsonReplacer(t *testing.T) {
 }
 
 func TestJsonLister(t *testing.T) {
-	lister := JSON()
+	lister := JSON(path)
 	list := []string{}
 
 	lister.List(&list)

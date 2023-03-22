@@ -132,7 +132,7 @@ func (p *Adapter) List(list *[]string) (err error) {
 
 func CreateFactory() *Factory {
 	factory := NewFactory()
-	factory.Use(adapter.JSON())
+	factory.Use(adapter.JSON(get_json_path()))
 
 	return factory
 }

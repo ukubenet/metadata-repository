@@ -17,13 +17,15 @@ type (
 	// of parcel.Decoder and parcel.Encoder
 	JSONCodec struct {
 		indent string
+		path   string
 	}
 )
 
 // JSON returns a new JSON Encoder/Decoder
-func JSON() *JSONCodec {
+func JSON(path string) *JSONCodec {
 	return &JSONCodec{
 		indent: "",
+		path:   path,
 	}
 }
 
@@ -36,9 +38,9 @@ func JSONIndent(amt int) *JSONCodec {
 }
 
 // Read entity metadate from a json file
-func (*JSONCodec) Read(entityName string, candidate *models.Entity) (err error) {
+func (jc *JSONCodec) Read(entityName string, candidate *models.Entity) (err error) {
 
-	file, err := os.Open(entityName + Ext)
+	file, err := os.Open(jc.path + entityName + Ext)
 	if err != nil {
 		return
 	}
@@ -70,27 +72,27 @@ func (jc *JSONCodec) Put(candidate *models.Entity) (err error) {
 		return
 	}
 
-	os.WriteFile(candidate.EntityName+Ext, output, 0644)
+	os.WriteFile(jc.path+candidate.EntityName+Ext, output, 0644)
 
 	return
 }
 
 // Delete a json file containing entity metadata
-func (*JSONCodec) Delete(entityName string) (err error) {
-	err = os.Remove(entityName + Ext)
+func (jc *JSONCodec) Delete(entityName string) (err error) {
+	err = os.Remove(jc.path + entityName + Ext)
 	return
 }
 
 // List json files containing entity metadata
-func (*JSONCodec) List(list *[]string) (err error) {
-	root, err := os.Getwd()
-	filepath.WalkDir(root, func(path string, info fs.DirEntry, err error) error {
+func (jc *JSONCodec) List(list *[]string) (err error) {
+	filepath.WalkDir(jc.path, func(path string, info fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
 		// @todo pass const Ext below instead of ".json" string
-		if filepath.Ext(info.Name()) == ".json" {
-			*list = append(*list, path[len(root)+1:len(path)-5])
+		var filename string = info.Name()
+		if filepath.Ext(filename) == ".json" {
+			*list = append(*list, filename[0:len(filename)-len(".json")])
 		}
 		return nil
 	})

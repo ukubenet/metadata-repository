@@ -47,7 +47,12 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getAllAttributes(w http.ResponseWriter, r *http.Request) {
+	list := []string{"string", "number", "datetime"}
 
+	output := parcel.CreateFactory()
+	parcel := output.Parcel(w, r)
+
+	parcel.Encode(http.StatusOK, list)
 }
 
 func (app *application) deleteEntity(w http.ResponseWriter, r *http.Request) {
