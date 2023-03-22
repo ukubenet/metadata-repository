@@ -6,7 +6,13 @@ import (
 	"github.com/ukubenet/metadata-repository/models"
 )
 
+func TestMain(m *testing.M) {
+	set_env("test")
+	m.Run()
+}
+
 func TestReader(t *testing.T) {
+	set_env("test")
 	entity := new(models.Entity)
 	name := "test/Test"
 
@@ -86,5 +92,4 @@ func TestLister(t *testing.T) {
 	if list[1] != "test/Test" {
 		t.Fatal("List[1] is ", list[1])
 	}
-
 }
