@@ -58,7 +58,7 @@ func TestJsonLister(t *testing.T) {
 		t.Fail()
 	}
 
-	if list[0] != "test/Test" {
+	if list[0] != "Test" {
 		t.Fail()
 	}
 }

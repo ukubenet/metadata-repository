@@ -16,7 +16,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPut, "/v1/entity", app.putEntity)
 	router.HandlerFunc(http.MethodDelete, "/v1/entity/:name", app.deleteEntity)
 
-	router.HandlerFunc(http.MethodGet, "/v1/attributes", app.getAllAttributes)
+	router.HandlerFunc(http.MethodGet, "/v1/attribute-types", app.getAllAttributeTypes)
 
 	return app.enableCORS(router)
 }

@@ -89,7 +89,7 @@ func TestLister(t *testing.T) {
 		t.Fatal("List quantity", len(list))
 	}
 
-	if list[1] != "test/Test" {
+	if list[1] != "Test" {
 		t.Fatal("List[1] is ", list[1])
 	}
 }
