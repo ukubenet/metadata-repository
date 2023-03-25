@@ -46,8 +46,8 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	parcel.Encode(http.StatusOK, list)
 }
 
-func (app *application) getAllAttributes(w http.ResponseWriter, r *http.Request) {
-	list := []string{"string", "number", "datetime"}
+func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Request) {
+	list := []string{"string", "integer", "decimal", "datetime", "boolean"}
 
 	output := parcel.CreateFactory()
 	parcel := output.Parcel(w, r)
