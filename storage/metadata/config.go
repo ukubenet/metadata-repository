@@ -1,4 +1,4 @@
-package storage
+package metastorage
 
 import "os"
 

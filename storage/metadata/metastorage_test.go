@@ -1,4 +1,4 @@
-package storage
+package metastorage
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestMain(m *testing.M) {
 
 func TestReader(t *testing.T) {
 	set_env("test")
-	entity := new(models.Entity)
+	entity := new(models.EntityMetadata)
 	name := "test/Test"
 
 	reader := CreateFactory()
@@ -34,7 +34,7 @@ func TestReader(t *testing.T) {
 }
 
 func TestReplacer(t *testing.T) {
-	entity := new(models.Entity)
+	entity := new(models.EntityMetadata)
 	name := "test/Test"
 
 	factory := CreateFactory()
@@ -56,7 +56,7 @@ func TestReplacer(t *testing.T) {
 }
 
 func TestEraser(t *testing.T) {
-	entity := new(models.Entity)
+	entity := new(models.EntityMetadata)
 	name := "test/Test"
 	entityToDelete := "test/EntityToDelete"
 

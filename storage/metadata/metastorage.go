@@ -1,20 +1,20 @@
-// Package storage provides mechanisms to write structs to different data repositories
-package storage
+// Package metastorage provides mechanisms to write structs for entity metadata
+package metastorage
 
 import (
 	"github.com/ukubenet/metadata-repository/models"
-	"github.com/ukubenet/metadata-repository/storage/adapter"
+	"github.com/ukubenet/metadata-repository/storage/metadata/adapter"
 )
 
 type (
 	// Reader implementations should decode values from a storage repository to a candidate
 	Reader interface {
-		Read(string, *models.Entity) error
+		Read(string, *models.EntityMetadata) error
 	}
 
 	// Replacer implementation should encode values from a candidate to a storage repository.
 	Replacer interface {
-		Put(candidate *models.Entity) error
+		Put(candidate *models.EntityMetadata) error
 	}
 
 	// Delete implementations should delete entity
@@ -94,14 +94,14 @@ func (f *Factory) CreateAdapter() *Adapter {
 // Adapter
 
 // Adapter replace
-func (a *Adapter) Put(c *models.Entity) error {
+func (a *Adapter) Put(c *models.EntityMetadata) error {
 	inserter := a.factory.replacer
 
 	return inserter.Put(c)
 }
 
 // Adapter reader
-func (p *Adapter) Read(name string, c *models.Entity) (err error) {
+func (p *Adapter) Read(name string, c *models.EntityMetadata) (err error) {
 	reader := p.factory.reader
 	if err = reader.Read(name, c); err != nil {
 		return

@@ -38,7 +38,7 @@ func JSONIndent(amt int) *JSONCodec {
 }
 
 // Read entity metadate from a json file
-func (jc *JSONCodec) Read(entityName string, candidate *models.Entity) (err error) {
+func (jc *JSONCodec) Read(entityName string, candidate *models.EntityMetadata) (err error) {
 
 	file, err := os.Open(jc.path + entityName + Ext)
 	if err != nil {
@@ -59,7 +59,7 @@ func (jc *JSONCodec) Read(entityName string, candidate *models.Entity) (err erro
 }
 
 // Save the entity metadata to JSON file
-func (jc *JSONCodec) Put(candidate *models.Entity) (err error) {
+func (jc *JSONCodec) Put(candidate *models.EntityMetadata) (err error) {
 	var output []byte
 
 	if jc.indent != "" {

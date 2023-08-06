@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 func TestJsonReader(t *testing.T) {
 	reader := JSON(path)
 
-	candidate := new(models.Entity)
+	candidate := new(models.EntityMetadata)
 
 	err := reader.Read("test/Test", candidate)
 	if err != nil {
@@ -36,13 +36,14 @@ func TestJsonReader(t *testing.T) {
 
 func TestJsonReplacer(t *testing.T) {
 	inserter := JSON(path)
+	var attributes []models.Attribute = []models.Attribute{
+		{"name": "string_attribute", "type": "string"},
+		{"name": "number_attribute", "type": "number"},
+	}
 
-	var candidate *models.Entity = &models.Entity{
+	var candidate *models.EntityMetadata = &models.EntityMetadata{
 		EntityName: "test/Test",
-		Attributes: []models.Attribute{
-			{Name: "string_attribute", Type: "string"},
-			{Name: "number_attribute", Type: "number"},
-		},
+		Attributes: attributes,
 	}
 
 	inserter.Put(candidate)
