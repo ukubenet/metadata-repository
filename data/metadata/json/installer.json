@@ -1,0 +1,1 @@
+{"entityName":"installer","search":null,"attributes":[{"name":"name","null":false,"type":"string"},{"columns":[{"name":"skill","type":"reference","view":["name"]}],"name":"skills","null":false,"type":"table"},{"name":"email","null":false,"type":"string"}],"updatedAt":"0001-01-01T00:00:00Z"}

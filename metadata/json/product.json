@@ -1,1 +1,0 @@
-{"entityName":"product","attributes":[{"name":"name","type":"string"},{"name":"price","type":"number"}, {"name":"images","type":"table", "columns": [{"name":"image", "referer": "image", "view": ["url", "title"]}]}],"createdAt":"0001-01-01T00:00:00Z","updatedAt":"0001-01-01T00:00:00Z"}
