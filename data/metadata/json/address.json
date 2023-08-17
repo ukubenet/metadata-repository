@@ -1,0 +1,1 @@
+{"entityName":"address","search":null,"attributes":[{"name":"number","null":false,"type":"string"},{"name":"street","null":false,"type":"string"},{"name":"city","null":false,"type":"string"},{"name":"zip","null":false,"type":"string"}],"updatedAt":"0001-01-01T00:00:00Z"}
