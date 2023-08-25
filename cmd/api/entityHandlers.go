@@ -6,7 +6,6 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
-	parcel "github.com/ukubenet/metadata-repository/parser"
 )
 
 func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
@@ -21,11 +20,8 @@ func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(rw, r)
-
+	parcel := getParcel(rw, r)
 	parcel.Encode(http.StatusFound, entity)
-
 }
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
@@ -38,18 +34,15 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(w, r)
-
+	parcel := getParcel(w, r)
 	parcel.Encode(http.StatusOK, list)
 }
 
 func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 	entity := new(entity.Entity)
 
-	factoryReader := parcel.CreateFactory()
-	parcelReader := factoryReader.Parcel(rw, r)
-	err := parcelReader.Decode(entity)
+	parcel := getParcel(rw, r)
+	err := parcel.Decode(entity)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -85,8 +78,6 @@ func (app *application) getAllEntityTypes(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(w, r)
-
+	parcel := getParcel(w, r)
 	parcel.Encode(http.StatusOK, list)
 }

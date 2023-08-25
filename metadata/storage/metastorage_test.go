@@ -7,12 +7,12 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	set_env("test")
+	SetEnv("test")
 	m.Run()
 }
 
 func TestReader(t *testing.T) {
-	set_env("test")
+	SetEnv("test")
 	entity := new(metadata.EntityMetadata)
 	name := "test/Test"
 

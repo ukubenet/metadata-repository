@@ -5,47 +5,30 @@ import (
 
 	"github.com/ukubenet/metadata-repository/metadata"
 	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
+	metavalidator "github.com/ukubenet/metadata-repository/metadata/validator"
 )
 
 func ReadMetadata(name string) (*metadata.EntityMetadata, error) {
-	entity := new(metadata.EntityMetadata)
-	dbReader := metastorage.CreateFactory()
-	adapter := dbReader.CreateAdapter()
-	err := adapter.Read(name, entity)
-
-	return entity, err
+	return metastorage.ReadMetadata(name)
 }
 
 func ReadMetadataList() ([]string, error) {
-	storage := metastorage.CreateFactory()
-	adapter := storage.CreateAdapter()
-	list := []string{}
-	err := adapter.List(&list)
-
-	return list, err
+	return metastorage.ReadMetadataList()
 }
 
-func PutMetadata(metadata *metadata.EntityMetadata) error {
+func PutMetadata(entitymeta *metadata.EntityMetadata) error {
 
-	if metadata.EntityName == "" {
+	if entitymeta.EntityName == "" {
 		return errors.New("entity name not defined")
 	}
-	if len(metadata.Attributes) == 0 {
+	if len(entitymeta.Attributes) == 0 {
 		return errors.New("etity attributes not defined")
 	}
+	metavalidator.ValidateAttributes(entitymeta.Attributes)
 
-	factoryWriter := metastorage.CreateFactory()
-	adapter := factoryWriter.CreateAdapter()
-	err := adapter.Put(metadata)
-
-	return err
+	return metastorage.PutMetadata(entitymeta)
 }
 
 func DeleteMetadata(name string) error {
-
-	storage := metastorage.CreateFactory()
-	adapter := storage.CreateAdapter()
-	err := adapter.Delete(name)
-
-	return err
+	return metastorage.DeleteMetadata(name)
 }
