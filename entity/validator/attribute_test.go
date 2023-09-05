@@ -1,225 +1,205 @@
-package metavalidator
+package entityvalidator
 
 import (
 	"strings"
 	"testing"
 
-	"github.com/ukubenet/metadata-repository/metadata"
+	"github.com/ukubenet/metadata-repository/entity"
+	entitystorage "github.com/ukubenet/metadata-repository/entity/storage"
 	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
 )
 
 func TestMain(m *testing.M) {
 	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
 	m.Run()
 
 }
 
-func TestValidateAttributesNoName(t *testing.T) {
-	attributes := []metadata.Attribute{}
-	attribute := metadata.Attribute{
-		"type": "string",
-	}
-	attributes = append(attributes, attribute)
-
-	err := ValidateAttributes(attributes)
-	if !strings.Contains(err.Error(), "attribute 0 doesn't have name") {
-		t.Fatal(err)
+func TestValidateAttributesBrokenMeta(t *testing.T) {
+	values := entity.AttributeValues{
+		"name": "string",
 	}
 
-}
-
-func TestValidateAttributesNameNotString(t *testing.T) {
-	attributes := []metadata.Attribute{}
-	attribute := metadata.Attribute{
-		"name": 0,
-		"type": "string",
-	}
-	attributes = append(attributes, attribute)
-
-	err := ValidateAttributes(attributes)
-	if !strings.Contains(err.Error(), "name of attribute 0 is not a string") {
+	err := ValidateAttributeValues("missed entity meta", values)
+	if !strings.Contains(err.Error(), "error reading meta of entity \"missed entity meta\"") {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateAttributeNoType(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
+func TestValidateAttributeValueNoMeta(t *testing.T) {
+	values := entity.AttributeValues{
+		"name": "sample",
 	}
 
-	err := validateAttribute(attribute)
-	if !strings.Contains(err.Error(), "attribute \"name\" doesn't have type") {
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(err.Error(), "no such attribute \"name\"") {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateAttributeTypeIsNotString(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
-		"type": 1,
+func TestValidateAttributeReferenceMalformed(t *testing.T) {
+	values := entity.AttributeValues{
+		"sample": "string",
 	}
 
-	err := validateAttribute(attribute)
-	if !strings.Contains(err.Error(), "type of attribute \"name\" is not a string") {
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(err.Error(), "reference attribute \"sample\" is malformed") {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateIncorrectAttributeType(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
-		"type": "unsupported_type",
-	}
-
-	err := validateAttribute(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"type \"unsupported_type\" of attribute \"name\" is not defined",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateReferenceAttributeNoReference(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
-		"type": "reference",
-	}
-
-	err := validateAttribute(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"reference attribute \"name\" has missed reference property",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateReferenceWrongType(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name":      "name",
-		"type":      "reference",
-		"reference": 1,
-	}
-
-	err := validateAttribute(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"reference of attribute \"name\" is not a string",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateReferenceWrongReference(t *testing.T) {
+func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 	metastorage.SetEnv("test")
-	attribute := metadata.Attribute{
-		"name":      "name",
-		"type":      "reference",
-		"reference": "test/Reference2",
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": "Reference",
+			"view": map[string]any{
+				"missed": "value",
+			},
+		},
 	}
 
-	err := validateReference(attribute)
+	err := ValidateAttributeValues("test/TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
-		"error to read reference in attribute \"name\"",
+		"attribute \"missed\" is not present in reference entity \"Reference\". entity attribute: \"sample\"",
 	) {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateReferenceViewIsNotSlice(t *testing.T) {
+func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 	metastorage.SetEnv("test")
-	attribute := metadata.Attribute{
-		"name":      "name",
-		"type":      "reference",
-		"reference": "test/Reference",
-		"view":      "view",
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": "Reference",
+			"view": map[string]any{
+				"name": "value",
+			},
+		},
 	}
 
-	err := validateReference(attribute)
+	err := ValidateAttributeValues("test/TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
-		"view of reference attribute \"name\" is not a slice",
+		"value \"value\" from view attribute \"name\" of reference attribute \"sample\" don't belong to reference entity. Value in ref entity: \"string\"",
 	) {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
+func TestValidateAttributeReferenceSuccess(t *testing.T) {
 	metastorage.SetEnv("test")
-	attribute := metadata.Attribute{
-		"name":      "name",
-		"type":      "reference",
-		"reference": "test/Reference",
-		"view":      []string{"view"},
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": "Reference",
+			"view": map[string]any{
+				"name": "string",
+			},
+		},
 	}
 
-	err := validateReference(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"some attributes from view of reference attribute \"name\" don't belong to reference entity. Possible attributes: [\"name\"]",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateReferenceViewSuccess(t *testing.T) {
-	metastorage.SetEnv("test")
-	attribute := metadata.Attribute{
-		"name":      "name",
-		"type":      "reference",
-		"reference": "test/Reference",
-		"view":      []string{"name"},
-	}
-
-	err := validateReference(attribute)
+	err := ValidateAttributeValues("test/TestMeta", values)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func TestValidateTableNoColumns(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
-		"type": "table",
-	}
-
-	err := validateTable(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"table attribute \"name\" has missed columns property",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateTableInvalidColumnsType(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name":    "name",
-		"type":    "table",
-		"columns": []string{"name"},
-	}
-
-	err := validateAttribute(attribute)
-	if !strings.Contains(
-		err.Error(),
-		"columns property of attribute \"name\" is not a list of attributes",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateTableSuccess(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
-		"type": "table",
-		"columns": []metadata.Attribute{
-			{"name": "column", "type": "string"},
+func TestValidateAttributeReferenceReadError(t *testing.T) {
+	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": "No Reference",
+			"view": map[string]any{
+				"missed": "value",
+			},
 		},
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(
+		err.Error(),
+		"error to read reference \"No Reference\" in attribute \"sample\"",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateReferenceAttributeViewNotMap(t *testing.T) {
+	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": "No Reference",
+			"view":      "not a map",
+		},
+	}
+
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(
+		err.Error(),
+		"view of reference attribute \"sample\" is not a map",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateRefereceAttributeViewNotString(t *testing.T) {
+	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"sample": map[string]any{
+			"reference": 1,
+			"view":      "not a map",
+		},
+	}
+
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(
+		err.Error(),
+		"reference of attribute \"sample\" should be a string",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
+	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"table": map[string]any{
+			"columns": map[string]any{
+				"name": "sample",
+			},
+		},
+	}
+
+	err := ValidateAttributeValues("test/TestMeta", values)
+	if !strings.Contains(
+		err.Error(),
+		"meta property for column \"name\" of table attribute \"table\" does not exist",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateTableAttributeSuccess(t *testing.T) {
+	metastorage.SetEnv("test")
+	entitystorage.SetEnv("test")
+	values := map[string]any{
+		"table": map[string]any{
+			"columns": map[string]any{
+				"title": "sample",
+			},
+		},
+	}
+
+	err := ValidateAttributeValues("test/TestMeta", values)
 	if err != nil {
 		t.Fatal(err)
 	}

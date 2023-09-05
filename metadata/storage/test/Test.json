@@ -1,1 +1,1 @@
-{"entityName":"test/Test","attributes":[{"name":"sample","type":"reference", "reference": "test/Reference", "view": ["name"]}],"updatedAt":"0001-01-01T00:00:00Z"}
+{"entityName":"test/Test","search":null,"attributes":{"string_attribute":{"type":"string"}},"updatedAt":"0001-01-01T00:00:00Z"}

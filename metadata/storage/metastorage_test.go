@@ -28,7 +28,7 @@ func TestReader(t *testing.T) {
 		t.Fatal("Name", entity.EntityName)
 	}
 
-	if len(entity.Attributes) != 2 {
+	if len(entity.Attributes) != 1 {
 		t.Fatal("Attributes", entity.Attributes)
 	}
 }
@@ -50,7 +50,7 @@ func TestReplacer(t *testing.T) {
 		t.Fatal("Name", entity.EntityName)
 	}
 
-	if len(entity.Attributes) != 2 {
+	if len(entity.Attributes) != 1 {
 		t.Fatal("Attributes", entity.Attributes)
 	}
 }

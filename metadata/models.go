@@ -23,10 +23,12 @@ var AttributeTypeList = []string{
 }
 
 type EntityMetadata struct {
-	EntityName     string      `json:"entityName"`
-	SearchCriteria []Attribute `json:"search"`
-	Attributes     []Attribute `json:"attributes"`
-	UpdatedAt      time.Time   `json:"updatedAt"`
+	EntityName     string     `json:"entityName"`
+	SearchCriteria []string   `json:"search"`
+	Attributes     Attributes `json:"attributes"`
+	UpdatedAt      time.Time  `json:"updatedAt"`
 }
 
-type Attribute map[string]interface{}
+type Attributes map[string]Attribute
+
+type Attribute map[string]any

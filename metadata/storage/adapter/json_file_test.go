@@ -36,9 +36,9 @@ func TestJsonReader(t *testing.T) {
 
 func TestJsonReplacer(t *testing.T) {
 	inserter := JSON(path)
-	var attributes []metadata.Attribute = []metadata.Attribute{
-		{"name": "string_attribute", "type": "string"},
-		{"name": "number_attribute", "type": "number"},
+	var attributes metadata.Attributes = metadata.Attributes{
+		"string_attribute": {"type": "string"},
+		"number_attribute": {"type": "number"},
 	}
 
 	var candidate *metadata.EntityMetadata = &metadata.EntityMetadata{

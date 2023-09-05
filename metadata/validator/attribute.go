@@ -2,31 +2,23 @@ package metavalidator
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/ukubenet/metadata-repository/metadata"
 	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
-	"golang.org/x/exp/slices"
 )
 
-func ValidateAttributes(attributes []metadata.Attribute) (err error) {
-	for i, attribute := range attributes {
-		name, ok := attribute["name"]
-		if !ok {
-			return fmt.Errorf("attribute %d doesn't have name", i)
+func ValidateAttributes(attributes metadata.Attributes) (err error) {
+	for name, attribute := range attributes {
+		err := ValidateAttribute(name, attribute)
+		if err != nil {
+			return err
 		}
-		if _, ok := name.(string); !ok {
-			return fmt.Errorf("name of attribute %d is not a string", i)
-		}
-
-		validateAttribute(attribute)
 	}
 
 	return
 }
 
-func validateAttribute(attribute metadata.Attribute) (err error) {
-	name := attribute["name"].(string)
+func ValidateAttribute(name string, attribute metadata.Attribute) (err error) {
 	attrType, ok := attribute["type"]
 	if !ok {
 		return fmt.Errorf("attribute %q doesn't have type", name)
@@ -37,9 +29,9 @@ func validateAttribute(attribute metadata.Attribute) (err error) {
 
 	switch attrType.(string) {
 	case metadata.ReferenceType:
-		return validateReference(attribute)
+		return validateReference(name, attribute)
 	case metadata.TableType:
-		return validateTable(attribute)
+		return validateTable(name, attribute)
 	case metadata.StringType:
 	case metadata.IntegerType:
 	case metadata.NumberType:
@@ -53,13 +45,13 @@ func validateAttribute(attribute metadata.Attribute) (err error) {
 	return
 }
 
-func validateReference(attribute metadata.Attribute) (err error) {
+func validateReference(name string, attribute metadata.Attribute) (err error) {
 	reference, ok := attribute["reference"]
 	if !ok {
-		return fmt.Errorf("reference attribute %q has missed reference property", attribute["name"])
+		return fmt.Errorf("reference attribute %q has missed reference property", name)
 	}
 	if _, ok := reference.(string); !ok {
-		return fmt.Errorf("reference of attribute %q is not a string", attribute["name"])
+		return fmt.Errorf("reference of attribute %q is not a string", name)
 	}
 
 	refEntity, err := metastorage.ReadMetadata(reference.(string))
@@ -71,55 +63,47 @@ func validateReference(attribute metadata.Attribute) (err error) {
 		)
 	}
 
-	view, ok := attribute["view"]
-	if ok {
-		if reflect.TypeOf(view).Kind() != reflect.Slice {
-			return fmt.Errorf("view of reference attribute %q is not a slice", attribute["name"])
+	attrview, ok := attribute["view"]
+	if !ok {
+		return fmt.Errorf("view of reference attribute %q is not present", name)
+	}
+
+	viewSlice, ok := attrview.([]interface{})
+	if !ok {
+		return fmt.Errorf("view of reference attribute %q is not a slice", name)
+	}
+
+	for _, viewElem := range viewSlice {
+		view, ok := viewElem.(string)
+		if !ok {
+			return fmt.Errorf("view element %q is not a string", viewElem)
 		}
-		attributeNames := readAttributeNames(refEntity.Attributes)
-		if !subslice(attribute["view"].([]string), attributeNames) {
-			return fmt.Errorf(
-				"some attributes from view of reference attribute %q don't belong to reference entity. Possible attributes: %q",
-				attribute["name"],
-				attributeNames,
-			)
+		_, ok = refEntity.Attributes[view]
+		if !ok {
+			return fmt.Errorf("%q from view of reference attribute %q don't belong to reference entity", view, name)
 		}
 	}
 
 	return
 }
 
-func validateTable(attribute metadata.Attribute) (err error) {
+func validateTable(name string, attribute metadata.Attribute) (err error) {
 	columns, ok := attribute["columns"]
 	if !ok {
-		return fmt.Errorf("table attribute %q has missed columns property", attribute["name"])
+		return fmt.Errorf("table attribute %q has missed columns property", name)
 	}
-	if _, ok := columns.([]metadata.Attribute); !ok {
-		return fmt.Errorf("columns property of attribute %q is not a list of attributes", attribute["name"])
+	metaColumns, ok := columns.(map[string]any)
+	if !ok {
+		return fmt.Errorf("columns property of attribute %q is malformed", name)
 	}
 
-	ValidateAttributes(columns.([]metadata.Attribute))
+	for columnName, columnMeta := range metaColumns {
+		columnMetaAttr, ok := columnMeta.(map[string]any)
+		if !ok {
+			return fmt.Errorf("columns property of column %q is malformed", columnName)
+		}
+		ValidateAttribute(columnName, columnMetaAttr)
+	}
 
 	return
-}
-
-func readAttributeNames(attributes []metadata.Attribute) []string {
-	var attributeNames []string
-	for _, attribute := range attributes {
-		attributeNames = append(attributeNames, attribute["name"].(string))
-	}
-
-	return attributeNames
-}
-
-func subslice(s1 []string, s2 []string) bool {
-	if len(s1) > len(s2) {
-		return false
-	}
-	for _, e := range s1 {
-		if !slices.Contains(s2, e) {
-			return false
-		}
-	}
-	return true
 }

@@ -4,7 +4,7 @@ import "os"
 
 var env string = "dev"
 
-func set_env(e string) {
+func SetEnv(e string) {
 	env = e
 }
 

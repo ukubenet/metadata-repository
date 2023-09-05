@@ -1,0 +1,1 @@
+{"entityName":"test/TestMeta","search":null,"attributes":{"sample":{"reference":"test/Reference","type":"reference","view":["name"]}, "table":{"columns":{"title":{"type":"string"}},"type":"table"}},"updatedAt":"0001-01-01T00:00:00Z"}

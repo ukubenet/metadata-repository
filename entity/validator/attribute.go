@@ -1,37 +1,56 @@
-package metavalidator
+package entityvalidator
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/ukubenet/metadata-repository/entity"
+	entityapi "github.com/ukubenet/metadata-repository/entity/api"
 	"github.com/ukubenet/metadata-repository/metadata"
-	"golang.org/x/exp/slices"
+	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
+	metavalidator "github.com/ukubenet/metadata-repository/metadata/validator"
 )
 
-func ValidateAttributesValues(values []entity.AttributeValue) (err error) {
-	for _, value := range values {
-		validateAttributeValue(name, value)
+func ValidateAttributeValues(entity string, values entity.AttributeValues) (err error) {
+	meta, err := metaapi.ReadMetadata(entity)
+	if err != nil {
+		return fmt.Errorf("error reading meta of entity %q", entity)
+	}
+
+	if err = validateValues(values, meta.Attributes); err != nil {
+		return err
 	}
 
 	return
 }
 
-func validateAttributeValue(name string, value interface{}) (err error) {
-	name := attribute["name"].(string)
-	attrType, ok := attribute["type"]
-	if !ok {
-		return fmt.Errorf("attribute %q doesn't have type", name)
-	}
-	if _, ok := attrType.(string); !ok {
-		return fmt.Errorf("type of attribute %q is not a string", name)
+func validateValues(values entity.AttributeValues, metaAttributes map[string]metadata.Attribute) (err error) {
+	for name, value := range values {
+		err = validateAttributeValue(name, value, metaAttributes[name])
+		if err != nil {
+			return err
+		}
 	}
 
-	switch attrType.(string) {
+	return
+}
+
+func validateAttributeValue(name string, value interface{}, meta metadata.Attribute) (err error) {
+	if meta == nil {
+		return fmt.Errorf("no such attribute %q", name)
+	}
+
+	err = metavalidator.ValidateAttribute(name, meta)
+	if err != nil {
+		return err
+	}
+
+	metatype := meta["type"].(string)
+
+	switch meta["type"].(string) {
 	case metadata.ReferenceType:
-		return validateReference(attribute)
+		return validateReference(name, value, meta)
 	case metadata.TableType:
-		return validateTable(attribute)
+		return validateTable(name, value, meta)
 	case metadata.StringType:
 	case metadata.IntegerType:
 	case metadata.NumberType:
@@ -39,41 +58,51 @@ func validateAttributeValue(name string, value interface{}) (err error) {
 	case metadata.BooleanType:
 		// do nothing
 	default:
-		return fmt.Errorf("type %q of attribute %q is not defined", attrType, name)
+		return fmt.Errorf("type %q of attribute %q is not defined", metatype, name)
 	}
 
 	return
 }
 
-func validateReference(attribute metadata.Attribute) (err error) {
-	reference, ok := attribute["reference"]
+func validateReference(name string, value any, meta metadata.Attribute) (err error) {
+	referenceMap, ok := value.(map[string]any)
 	if !ok {
-		return fmt.Errorf("reference attribute %q has missed reference property", attribute["name"])
-	}
-	if _, ok := reference.(string); !ok {
-		return fmt.Errorf("reference of attribute %q is not a string", attribute["name"])
+		return fmt.Errorf("reference attribute %q is malformed", name)
 	}
 
-	refEntity, err := metastorage.ReadMetadata(reference.(string))
+	reference, ok := referenceMap["reference"].(string)
+	if !ok {
+		return fmt.Errorf("reference of attribute %q should be a string", name)
+	}
+
+	view, ok := referenceMap["view"]
+	if !ok {
+		return fmt.Errorf("view of reference attribute %q is not present", name)
+	}
+
+	if _, ok := view.(map[string]any); !ok {
+		return fmt.Errorf("view of reference attribute %q is not a map", name)
+	}
+
+	refEntity, err := entityapi.ReadEntity(meta["reference"].(string), reference)
 	if err != nil {
-		return fmt.Errorf(
-			"error to read reference in attribute %q: %q",
-			attribute["name"],
-			err,
-		)
+		return fmt.Errorf("error to read reference %q in attribute %q", reference, name)
 	}
 
-	view, ok := attribute["view"]
-	if ok {
-		if reflect.TypeOf(view).Kind() != reflect.Slice {
-			return fmt.Errorf("view of reference attribute %q is not a slice", attribute["name"])
+	for key, elem := range view.(map[string]any) {
+		refValue, ok := refEntity.Attributes[key]
+		if !ok {
+			return fmt.Errorf("attribute %q is not present in reference entity %q. entity attribute: %q", key, reference, name)
 		}
-		attributeNames := readAttributeNames(refEntity.Attributes)
-		if !subslice(attribute["view"].([]string), attributeNames) {
+
+		// @todo add comparison of other complex types such as references, etc
+		if refValue != elem {
 			return fmt.Errorf(
-				"some attributes from view of reference attribute %q don't belong to reference entity. Possible attributes: %q",
-				attribute["name"],
-				attributeNames,
+				"value %q from view attribute %q of reference attribute %q don't belong to reference entity. Value in ref entity: %q",
+				elem,
+				key,
+				name,
+				refValue,
 			)
 		}
 	}
@@ -81,37 +110,47 @@ func validateReference(attribute metadata.Attribute) (err error) {
 	return
 }
 
-func validateTable(attribute metadata.Attribute) (err error) {
-	columns, ok := attribute["columns"]
+func validateTable(name string, value interface{}, meta metadata.Attribute) (err error) {
+	tableMap, ok := value.(map[string]any)
 	if !ok {
-		return fmt.Errorf("table attribute %q has missed columns property", attribute["name"])
-	}
-	if _, ok := columns.([]metadata.Attribute); !ok {
-		return fmt.Errorf("columns property of attribute %q is not a list of attributes", attribute["name"])
+		return fmt.Errorf("table attribute %q is not a string map", name)
 	}
 
-	ValidateAttributes(columns.([]metadata.Attribute))
-
-	return
-}
-
-func readAttributeNames(attributes []metadata.Attribute) []string {
-	var attributeNames []string
-	for _, attribute := range attributes {
-		attributeNames = append(attributeNames, attribute["name"].(string))
+	columnsRaw, ok := tableMap["columns"]
+	if !ok {
+		return fmt.Errorf("table attribute %q doesn't have columns property", name)
 	}
 
-	return attributeNames
-}
-
-func subslice(s1 []string, s2 []string) bool {
-	if len(s1) > len(s2) {
-		return false
+	columns, ok := columnsRaw.(map[string]any)
+	if !ok {
+		return fmt.Errorf("columns property of table attribute %q isn't a string map", name)
 	}
-	for _, e := range s1 {
-		if !slices.Contains(s2, e) {
-			return false
+
+	metaColumnsRaw, ok := meta["columns"]
+	if !ok {
+		return fmt.Errorf("table attribute %q doesn't have columns meta property", name)
+	}
+
+	metaColumnsMap, ok := metaColumnsRaw.(map[string]any)
+	if !ok {
+		return fmt.Errorf("columns meta property of table attribute %q isn't a string", name)
+	}
+
+	for columnName, columnValue := range columns {
+		metaColumnRaw, ok := metaColumnsMap[columnName]
+		if !ok {
+			return fmt.Errorf("meta property for column %q of table attribute %q does not exist", columnName, name)
+		}
+		metaColumn, ok := metaColumnRaw.(map[string]any)
+		if !ok {
+			return fmt.Errorf("meta property for column %q of table attribute %q isn't a string map", columnName, name)
+		}
+
+		err = validateAttributeValue(columnName, columnValue, metaColumn)
+		if err != nil {
+			return err
 		}
 	}
-	return true
+
+	return
 }

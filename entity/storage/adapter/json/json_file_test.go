@@ -40,9 +40,9 @@ func TestJsonReader(t *testing.T) {
 
 func TestJsonReplacer(t *testing.T) {
 	inserter := JSON(path)
-	var attributes []entity.AttributeValue = []entity.AttributeValue{
-		{"string_attribute": "string"},
-		{"number_attribute": 100},
+	var attributes entity.AttributeValues = entity.AttributeValues{
+		"string_attribute": "string",
+		"number_attribute": 100,
 	}
 
 	var candidate *entity.Entity = &entity.Entity{

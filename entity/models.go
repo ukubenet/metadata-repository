@@ -10,10 +10,15 @@ import "time"
 // }
 
 type Entity struct {
-	EntityName string           `json:"entityName"`
-	Identifier string           `json:"Identifier"`
-	Attributes []AttributeValue `json:"attributes"`
-	UpdatedAt  time.Time        `json:"updatedAt"`
-}	
+	EntityName string          `json:"entityName"`
+	Identifier string          `json:"Identifier"`
+	Attributes AttributeValues `json:"attributes"`
+	UpdatedAt  time.Time       `json:"updatedAt"`
+}
 
-type AttributeValue map[string]interface{}
+type AttributeValues map[string]any
+
+type ReferenceValue struct {
+	Reference string          `json:"reference"`
+	View      AttributeValues `json:"view"`
+}

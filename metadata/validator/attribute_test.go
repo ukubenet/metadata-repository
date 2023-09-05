@@ -14,40 +14,12 @@ func TestMain(m *testing.M) {
 
 }
 
-func TestValidateAttributesNoName(t *testing.T) {
-	attributes := []metadata.Attribute{}
-	attribute := metadata.Attribute{
-		"type": "string",
-	}
-	attributes = append(attributes, attribute)
-
-	err := ValidateAttributes(attributes)
-	if !strings.Contains(err.Error(), "attribute 0 doesn't have name") {
-		t.Fatal(err)
-	}
-
-}
-
-func TestValidateAttributesNameNotString(t *testing.T) {
-	attributes := []metadata.Attribute{}
-	attribute := metadata.Attribute{
-		"name": 0,
-		"type": "string",
-	}
-	attributes = append(attributes, attribute)
-
-	err := ValidateAttributes(attributes)
-	if !strings.Contains(err.Error(), "name of attribute 0 is not a string") {
-		t.Fatal(err)
-	}
-}
-
 func TestValidateAttributeNoType(t *testing.T) {
-	attribute := metadata.Attribute{
-		"name": "name",
+	attributes := metadata.Attributes{
+		"name": {"name": "name"},
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttributes(attributes)
 	if !strings.Contains(err.Error(), "attribute \"name\" doesn't have type") {
 		t.Fatal(err)
 	}
@@ -59,7 +31,7 @@ func TestValidateAttributeTypeIsNotString(t *testing.T) {
 		"type": 1,
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if !strings.Contains(err.Error(), "type of attribute \"name\" is not a string") {
 		t.Fatal(err)
 	}
@@ -71,7 +43,7 @@ func TestValidateIncorrectAttributeType(t *testing.T) {
 		"type": "unsupported_type",
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"type \"unsupported_type\" of attribute \"name\" is not defined",
@@ -82,11 +54,10 @@ func TestValidateIncorrectAttributeType(t *testing.T) {
 
 func TestValidateReferenceAttributeNoReference(t *testing.T) {
 	attribute := metadata.Attribute{
-		"name": "name",
 		"type": "reference",
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"reference attribute \"name\" has missed reference property",
@@ -97,12 +68,11 @@ func TestValidateReferenceAttributeNoReference(t *testing.T) {
 
 func TestValidateReferenceWrongType(t *testing.T) {
 	attribute := metadata.Attribute{
-		"name":      "name",
 		"type":      "reference",
 		"reference": 1,
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"reference of attribute \"name\" is not a string",
@@ -114,12 +84,11 @@ func TestValidateReferenceWrongType(t *testing.T) {
 func TestValidateReferenceWrongReference(t *testing.T) {
 	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
-		"name":      "name",
 		"type":      "reference",
 		"reference": "test/Reference2",
 	}
 
-	err := validateReference(attribute)
+	err := validateReference("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"error to read reference in attribute \"name\"",
@@ -131,13 +100,12 @@ func TestValidateReferenceWrongReference(t *testing.T) {
 func TestValidateReferenceViewIsNotSlice(t *testing.T) {
 	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
-		"name":      "name",
 		"type":      "reference",
 		"reference": "test/Reference",
 		"view":      "view",
 	}
 
-	err := validateReference(attribute)
+	err := validateReference("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"view of reference attribute \"name\" is not a slice",
@@ -149,16 +117,15 @@ func TestValidateReferenceViewIsNotSlice(t *testing.T) {
 func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
 	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
-		"name":      "name",
 		"type":      "reference",
 		"reference": "test/Reference",
-		"view":      []string{"view"},
+		"view":      []interface{}{"view"},
 	}
 
-	err := validateReference(attribute)
+	err := validateReference("name", attribute)
 	if !strings.Contains(
 		err.Error(),
-		"some attributes from view of reference attribute \"name\" don't belong to reference entity. Possible attributes: [\"name\"]",
+		"\"view\" from view of reference attribute \"name\" don't belong to reference entity",
 	) {
 		t.Fatal(err)
 	}
@@ -167,13 +134,12 @@ func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
 func TestValidateReferenceViewSuccess(t *testing.T) {
 	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
-		"name":      "name",
 		"type":      "reference",
 		"reference": "test/Reference",
-		"view":      []string{"name"},
+		"view":      []interface{}{"name"},
 	}
 
-	err := validateReference(attribute)
+	err := validateReference("name", attribute)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,11 +147,10 @@ func TestValidateReferenceViewSuccess(t *testing.T) {
 
 func TestValidateTableNoColumns(t *testing.T) {
 	attribute := metadata.Attribute{
-		"name": "name",
 		"type": "table",
 	}
 
-	err := validateTable(attribute)
+	err := validateTable("name", attribute)
 	if !strings.Contains(
 		err.Error(),
 		"table attribute \"name\" has missed columns property",
@@ -196,15 +161,14 @@ func TestValidateTableNoColumns(t *testing.T) {
 
 func TestValidateTableInvalidColumnsType(t *testing.T) {
 	attribute := metadata.Attribute{
-		"name":    "name",
 		"type":    "table",
-		"columns": []string{"name"},
+		"columns": []interface{}{"name"},
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if !strings.Contains(
 		err.Error(),
-		"columns property of attribute \"name\" is not a list of attributes",
+		"columns property of attribute \"name\" is malformed",
 	) {
 		t.Fatal(err)
 	}
@@ -212,14 +176,11 @@ func TestValidateTableInvalidColumnsType(t *testing.T) {
 
 func TestValidateTableSuccess(t *testing.T) {
 	attribute := metadata.Attribute{
-		"name": "name",
-		"type": "table",
-		"columns": []metadata.Attribute{
-			{"name": "column", "type": "string"},
-		},
+		"type":    "table",
+		"columns": map[string]any{"column": map[string]any{"type": "string"}},
 	}
 
-	err := validateAttribute(attribute)
+	err := ValidateAttribute("name", attribute)
 	if err != nil {
 		t.Fatal(err)
 	}

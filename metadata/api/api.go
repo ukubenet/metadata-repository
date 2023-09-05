@@ -9,7 +9,12 @@ import (
 )
 
 func ReadMetadata(name string) (*metadata.EntityMetadata, error) {
-	return metastorage.ReadMetadata(name)
+	meta, err := metastorage.ReadMetadata(name)
+	if err != nil {
+		return meta, err
+	}
+
+	return meta, err
 }
 
 func ReadMetadataList() ([]string, error) {
@@ -24,7 +29,10 @@ func PutMetadata(entitymeta *metadata.EntityMetadata) error {
 	if len(entitymeta.Attributes) == 0 {
 		return errors.New("etity attributes not defined")
 	}
-	metavalidator.ValidateAttributes(entitymeta.Attributes)
+
+	if err := metavalidator.ValidateAttributes(entitymeta.Attributes); err != nil {
+		return err
+	}
 
 	return metastorage.PutMetadata(entitymeta)
 }
