@@ -161,3 +161,12 @@ func CreateFactory() *EntityFactory {
 
 	return factory
 }
+
+func ReadEntity(name string, identifier string) (*entity.Entity, error) {
+	entity := new(entity.Entity)
+	dbReader := CreateFactory()
+	adapter := dbReader.CreateAdapter()
+	err := adapter.Read(name, identifier, entity)
+
+	return entity, err
+}

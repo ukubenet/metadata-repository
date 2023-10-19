@@ -5,13 +5,14 @@ import (
 
 	"github.com/ukubenet/metadata-repository/entity"
 	storage "github.com/ukubenet/metadata-repository/entity/storage"
+	entityvalidator "github.com/ukubenet/metadata-repository/entity/validator"
 )
 
 func ReadEntity(name string, identifier string) (*entity.Entity, error) {
-	entity := new(entity.Entity)
-	dbReader := storage.CreateFactory()
-	adapter := dbReader.CreateAdapter()
-	err := adapter.Read(name, identifier, entity)
+	entity, err := storage.ReadEntity(name, identifier)
+	if err != nil {
+		return entity, err
+	}
 
 	return entity, err
 }
@@ -26,6 +27,9 @@ func PutEntity(entity *entity.Entity) error {
 	}
 	if len(entity.Attributes) == 0 {
 		return errors.New("entity attributes not defined")
+	}
+	if err := entityvalidator.ValidateAttributeValues(entity.EntityName, entity.Attributes); err != nil {
+		return err
 	}
 
 	factoryWriter := storage.CreateFactory()

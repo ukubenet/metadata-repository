@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ukubenet/metadata-repository/entity"
-	entityapi "github.com/ukubenet/metadata-repository/entity/api"
+	entitystorage "github.com/ukubenet/metadata-repository/entity/storage"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 	metavalidator "github.com/ukubenet/metadata-repository/metadata/validator"
@@ -72,7 +72,7 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 
 	reference, ok := referenceMap["reference"].(string)
 	if !ok {
-		return fmt.Errorf("reference of attribute %q should be a string", name)
+		return fmt.Errorf("reference of attribute %q does not exist or not a string", name)
 	}
 
 	view, ok := referenceMap["view"]
@@ -84,7 +84,7 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 		return fmt.Errorf("view of reference attribute %q is not a map", name)
 	}
 
-	refEntity, err := entityapi.ReadEntity(meta["reference"].(string), reference)
+	refEntity, err := entitystorage.ReadEntity(meta["reference"].(string), reference)
 	if err != nil {
 		return fmt.Errorf("error to read reference %q in attribute %q", reference, name)
 	}
