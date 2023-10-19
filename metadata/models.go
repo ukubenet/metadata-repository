@@ -1,26 +1,34 @@
 package metadata
 
-import "time"
+import (
+	"time"
+)
 
-type EntityMetadata struct {
-	EntityName     string      `json:"entityName"`
-	SearchCriteria []Attribute `json:"search"`
-	Attributes     []Attribute `json:"attributes"`
-	UpdatedAt      time.Time   `json:"updatedAt"`
+const IntegerType = "integer"
+const NumberType = "number"
+const StringType = "string"
+const DatetimeType = "dateTime"
+const BooleanType = "boolean"
+const ReferenceType = "reference"
+const TableType = "table"
+
+var AttributeTypeList = []string{
+	IntegerType,
+	NumberType,
+	StringType,
+	DatetimeType,
+	BooleanType,
+	ReferenceType,
+	TableType,
 }
 
-// type Attribute struct {
-// 	Name      string    `json:"name"`
-// 	Type      Type      `json:"type"`
-// 	CreatedAt time.Time `json:"createdAt"`
-// 	UpdatedAt time.Time `json:"updatedAt"`
-// }
+type EntityMetadata struct {
+	EntityName     string     `json:"entityName"`
+	SearchCriteria []string   `json:"search"`
+	Attributes     Attributes `json:"attributes"`
+	UpdatedAt      time.Time  `json:"updatedAt"`
+}
 
-type Attribute map[string]interface{}
+type Attributes map[string]Attribute
 
-// type Type struct {
-// 	Name         string `json:"name"`
-// 	DataType     string `json:"dataType"`
-// 	NotNull      bool   `json:"notNull"`
-// 	DefaultValue string `json:"defaultValue"`
-// }
+type Attribute map[string]any

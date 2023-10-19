@@ -2,6 +2,8 @@
 package metastorage
 
 import (
+	"errors"
+
 	"github.com/ukubenet/metadata-repository/metadata"
 	"github.com/ukubenet/metadata-repository/metadata/storage/adapter"
 )
@@ -135,4 +137,47 @@ func CreateFactory() *Factory {
 	factory.Use(adapter.JSON(get_json_path()))
 
 	return factory
+}
+
+func ReadMetadata(name string) (*metadata.EntityMetadata, error) {
+	entity := new(metadata.EntityMetadata)
+	dbReader := CreateFactory()
+	adapter := dbReader.CreateAdapter()
+	err := adapter.Read(name, entity)
+
+	return entity, err
+}
+
+func ReadMetadataList() ([]string, error) {
+	storage := CreateFactory()
+	adapter := storage.CreateAdapter()
+	list := []string{}
+	err := adapter.List(&list)
+
+	return list, err
+}
+
+func PutMetadata(entitymeta *metadata.EntityMetadata) error {
+
+	if entitymeta.EntityName == "" {
+		return errors.New("entity name not defined")
+	}
+	if len(entitymeta.Attributes) == 0 {
+		return errors.New("etity attributes not defined")
+	}
+
+	factoryWriter := CreateFactory()
+	adapter := factoryWriter.CreateAdapter()
+	err := adapter.Put(entitymeta)
+
+	return err
+}
+
+func DeleteMetadata(name string) error {
+
+	storage := CreateFactory()
+	adapter := storage.CreateAdapter()
+	err := adapter.Delete(name)
+
+	return err
 }

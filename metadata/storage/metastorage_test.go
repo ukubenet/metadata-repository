@@ -7,12 +7,12 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	set_env("test")
+	SetEnv("test")
 	m.Run()
 }
 
 func TestReader(t *testing.T) {
-	set_env("test")
+	SetEnv("test")
 	entity := new(metadata.EntityMetadata)
 	name := "test/Test"
 
@@ -28,7 +28,7 @@ func TestReader(t *testing.T) {
 		t.Fatal("Name", entity.EntityName)
 	}
 
-	if len(entity.Attributes) != 2 {
+	if len(entity.Attributes) != 1 {
 		t.Fatal("Attributes", entity.Attributes)
 	}
 }
@@ -50,7 +50,7 @@ func TestReplacer(t *testing.T) {
 		t.Fatal("Name", entity.EntityName)
 	}
 
-	if len(entity.Attributes) != 2 {
+	if len(entity.Attributes) != 1 {
 		t.Fatal("Attributes", entity.Attributes)
 	}
 }

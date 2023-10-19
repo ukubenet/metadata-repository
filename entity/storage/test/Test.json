@@ -1,1 +1,1 @@
-{"entityName":"test","Identifier":"Test","attributes":[{"string_attribute":"string"},{"number_attribute":100}],"updatedAt":"0001-01-01T00:00:00Z"}
+{"entityName":"test","Identifier":"Test","attributes":{"number_attribute":100,"string_attribute":"string"},"updatedAt":"0001-01-01T00:00:00Z"}

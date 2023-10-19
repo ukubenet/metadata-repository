@@ -6,12 +6,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
-	parcel "github.com/ukubenet/metadata-repository/parser"
 )
 
 func (app *application) getOneEntityMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
-	entity := new(metadata.EntityMetadata)
 	name := params.ByName("name")
 
 	entity, err := metaapi.ReadMetadata(name)
@@ -20,9 +18,7 @@ func (app *application) getOneEntityMetadata(rw http.ResponseWriter, r *http.Req
 		return
 	}
 
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(rw, r)
-
+	parcel := getParcel(rw, r)
 	parcel.Encode(http.StatusFound, entity)
 
 }
@@ -34,18 +30,13 @@ func (app *application) getAllEntityMetadataList(w http.ResponseWriter, r *http.
 		return
 	}
 
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(w, r)
-
+	parcel := getParcel(w, r)
 	parcel.Encode(http.StatusOK, list)
 }
 
 func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Request) {
-
-	output := parcel.CreateFactory()
-	parcel := output.Parcel(w, r)
-
-	parcel.Encode(http.StatusOK, metadata.Attributes)
+	parcel := getParcel(w, r)
+	parcel.Encode(http.StatusOK, metadata.AttributeTypeList)
 }
 
 func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Request) {
@@ -64,9 +55,8 @@ func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Requ
 func (app *application) putEntityMetadata(rw http.ResponseWriter, r *http.Request) {
 	metadata := new(metadata.EntityMetadata)
 
-	factoryReader := parcel.CreateFactory()
-	parcelReader := factoryReader.Parcel(rw, r)
-	err := parcelReader.Decode(metadata)
+	parcel := getParcel(rw, r)
+	err := parcel.Decode(metadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
