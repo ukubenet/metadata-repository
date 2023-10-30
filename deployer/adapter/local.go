@@ -30,3 +30,13 @@ func (local *LocalDeployer) Deploy(entitymeta *metadata.EntityMetadata) (err err
 
 	return
 }
+
+func (local *LocalDeployer) Delete(entitymeta *metadata.EntityMetadata) (err error) {
+
+	dir := local.path + entitymeta.EntityName
+	if err := os.RemoveAll(dir); err != nil {
+		return err
+	}
+
+	return
+}

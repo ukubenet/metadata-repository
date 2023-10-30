@@ -11,6 +11,7 @@ import (
 type (
 	Deployer interface {
 		Deploy(*metadata.EntityMetadata) error
+		Delete(*metadata.EntityMetadata) error
 	}
 
 	Adapter struct {
@@ -52,6 +53,15 @@ func (p *Adapter) Deploy(entitymeta *metadata.EntityMetadata) (err error) {
 	return
 }
 
+func (p *Adapter) Delete(entitymeta *metadata.EntityMetadata) (err error) {
+	deployer := p.factory.deployer
+	if err = deployer.Delete(entitymeta); err != nil {
+		return
+	}
+
+	return
+}
+
 func CreateFactory() *Factory {
 	factory := NewFactory()
 	factory.Use(adapter.Local(get_path()))
@@ -60,6 +70,19 @@ func CreateFactory() *Factory {
 }
 
 func DeployMetadata(entitymeta *metadata.EntityMetadata) error {
+	if entitymeta.EntityName == "" {
+		return errors.New("entity name not defined")
+	}
+
+	entity := new(metadata.EntityMetadata)
+	dbReader := CreateFactory()
+	adapter := dbReader.CreateAdapter()
+	err := adapter.Deploy(entity)
+
+	return err
+}
+
+func Delete(entitymeta *metadata.EntityMetadata) error {
 	if entitymeta.EntityName == "" {
 		return errors.New("entity name not defined")
 	}

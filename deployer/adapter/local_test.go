@@ -25,3 +25,14 @@ func TestLocalDeployer(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestLocalDelete(t *testing.T) {
+	deployer := Local(path)
+
+	entity, _ := metaapi.ReadMetadata("test")
+
+	err := deployer.Delete(entity)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
