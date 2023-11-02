@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ukubenet/metadata-repository/deployer"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
@@ -43,7 +44,21 @@ func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Requ
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 
-	err := metaapi.DeleteMetadata(name)
+	entity, err := metaapi.ReadMetadata(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory()
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Delete(entity)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.DeleteMetadata(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -63,6 +78,14 @@ func (app *application) putEntityMetadata(rw http.ResponseWriter, r *http.Reques
 	}
 
 	err = metaapi.PutMetadata(metadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory()
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Deploy(metadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
