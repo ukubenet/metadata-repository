@@ -1,1 +1,0 @@
-{"entityName":"client","search":null,"attributes":[{"name":"name","null":false,"type":"string"},{"name":"address","null":true,"type":"reference","view":["number","street","city","zip_code"]},{"name":"email","null":false,"type":"string"}],"updatedAt":"0001-01-01T00:00:00Z"}

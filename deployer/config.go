@@ -1,18 +1,23 @@
 package deployer
 
-import "os"
+import (
+	"os"
 
-var env string = "dev"
+	"github.com/ukubenet/metadata-repository/config"
+	"github.com/ukubenet/metadata-repository/deployer/adapter"
+)
 
-func SetEnv(e string) {
-	env = e
-}
+const JSON = "json_file"
 
 func get_path() string {
 	path, _ := os.Getwd()
-	if env == "test" {
-		return path + "/"
+	return path + config.Config.Metadata.Path
+}
+
+func getAdapter() interface{} {
+	if config.Config.Metadata.Adapter == JSON {
+		return adapter.Local(get_path())
 	} else {
-		return path + "/../../data/entity/json/"
+		panic("Undefined deployer adapter!")
 	}
 }

@@ -1,1 +1,0 @@
-{"entityName":"client","Identifier":"1st_client","attributes":[{"name":"1st client"},{"address":{"reference":"fake_address","view":{"city":"Chicago","number":"1","street":"Chicago Ave","zip_code":"60061"}}},{"email":"1st_client@gmail.com"}],"updatedAt":"0001-01-01T00:00:00Z"}

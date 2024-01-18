@@ -4,14 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	config "github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
-	entitystorage "github.com/ukubenet/metadata-repository/entity/storage"
-	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
 )
 
 func TestMain(m *testing.M) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
+	config.LoadConfig("../../config", "test")
 	m.Run()
 
 }
@@ -50,8 +48,6 @@ func TestValidateAttributeReferenceMalformed(t *testing.T) {
 }
 
 func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": "Reference",
@@ -71,8 +67,6 @@ func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 }
 
 func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": "Reference",
@@ -92,8 +86,6 @@ func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 }
 
 func TestValidateAttributeReferenceSuccess(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": "Reference",
@@ -110,8 +102,6 @@ func TestValidateAttributeReferenceSuccess(t *testing.T) {
 }
 
 func TestValidateAttributeReferenceReadError(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": "No Reference",
@@ -131,8 +121,6 @@ func TestValidateAttributeReferenceReadError(t *testing.T) {
 }
 
 func TestValidateReferenceAttributeViewNotMap(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": "No Reference",
@@ -150,8 +138,6 @@ func TestValidateReferenceAttributeViewNotMap(t *testing.T) {
 }
 
 func TestValidateRefereceAttributeViewNotString(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference": 1,
@@ -162,15 +148,13 @@ func TestValidateRefereceAttributeViewNotString(t *testing.T) {
 	err := ValidateAttributeValues("test/TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
-		"reference of attribute \"sample\" should be a string",
+		"reference of attribute \"sample\" does not exist or not a string",
 	) {
 		t.Fatal(err)
 	}
 }
 
 func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"table": map[string]any{
 			"columns": map[string]any{
@@ -189,8 +173,6 @@ func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
 }
 
 func TestValidateTableAttributeSuccess(t *testing.T) {
-	metastorage.SetEnv("test")
-	entitystorage.SetEnv("test")
 	values := map[string]any{
 		"table": map[string]any{
 			"columns": map[string]any{

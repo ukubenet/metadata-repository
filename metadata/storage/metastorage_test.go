@@ -3,16 +3,16 @@ package metastorage
 import (
 	"testing"
 
+	config "github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestMain(m *testing.M) {
-	SetEnv("test")
+	config.LoadConfig("../../config", "test")
 	m.Run()
 }
 
 func TestReader(t *testing.T) {
-	SetEnv("test")
 	entity := new(metadata.EntityMetadata)
 	name := "test/Test"
 

@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	config "github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/metadata"
-	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
 )
 
 func TestMain(m *testing.M) {
-	metastorage.SetEnv("test")
+	config.LoadConfig("../../config", "test")
 	m.Run()
 
 }
@@ -82,7 +82,6 @@ func TestValidateReferenceWrongType(t *testing.T) {
 }
 
 func TestValidateReferenceWrongReference(t *testing.T) {
-	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
 		"type":      "reference",
 		"reference": "test/Reference2",
@@ -98,7 +97,6 @@ func TestValidateReferenceWrongReference(t *testing.T) {
 }
 
 func TestValidateReferenceViewIsNotSlice(t *testing.T) {
-	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
 		"type":      "reference",
 		"reference": "test/Reference",
@@ -115,7 +113,6 @@ func TestValidateReferenceViewIsNotSlice(t *testing.T) {
 }
 
 func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
-	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
 		"type":      "reference",
 		"reference": "test/Reference",
@@ -132,7 +129,6 @@ func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
 }
 
 func TestValidateReferenceViewSuccess(t *testing.T) {
-	metastorage.SetEnv("test")
 	attribute := metadata.Attribute{
 		"type":      "reference",
 		"reference": "test/Reference",
