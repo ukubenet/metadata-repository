@@ -3,18 +3,16 @@ package deployer
 import (
 	"testing"
 
+	config "github.com/ukubenet/metadata-repository/config"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
-	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
 )
 
 func TestMain(m *testing.M) {
-	SetEnv("test")
+	config.LoadConfig("../config", "test")
 	m.Run()
 }
 
 func TestDeployer(t *testing.T) {
-
-	metastorage.SetEnv("test")
 	entity, err := metaapi.ReadMetadata("test")
 	if err != nil {
 		t.Fatal(err)
@@ -30,8 +28,6 @@ func TestDeployer(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-
-	metastorage.SetEnv("test")
 	entity, err := metaapi.ReadMetadata("test")
 	if err != nil {
 		t.Fatal(err)

@@ -3,16 +3,16 @@ package entitystorage
 import (
 	"testing"
 
+	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 )
 
 func TestMain(m *testing.M) {
-	SetEnv("test")
+	config.LoadConfig("../../config", "test")
 	m.Run()
 }
 
 func TestReader(t *testing.T) {
-	SetEnv("test")
 	entity := new(entity.Entity)
 	name := "test"
 	identifier := "Test"

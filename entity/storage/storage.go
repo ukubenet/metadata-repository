@@ -3,7 +3,6 @@ package entitystorage
 
 import (
 	"github.com/ukubenet/metadata-repository/entity"
-	adapter "github.com/ukubenet/metadata-repository/entity/storage/adapter/json"
 )
 
 type (
@@ -157,7 +156,7 @@ func (p *Adapter) TypeList(list *[]string) (err error) {
 
 func CreateFactory() *EntityFactory {
 	factory := NewFactory()
-	factory.Use(adapter.JSON(get_json_path()))
+	factory.Use(getAdapter())
 
 	return factory
 }

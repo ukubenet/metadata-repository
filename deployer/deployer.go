@@ -4,7 +4,6 @@ package deployer
 import (
 	"errors"
 
-	"github.com/ukubenet/metadata-repository/deployer/adapter"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
@@ -35,6 +34,8 @@ func (f *Factory) UseDeployer(deployer Deployer) {
 func (f *Factory) Use(i interface{}) {
 	if deployer, ok := i.(Deployer); ok {
 		f.UseDeployer(deployer)
+	} else {
+		panic("Deployer is not passed!")
 	}
 }
 
@@ -64,7 +65,7 @@ func (p *Adapter) Delete(entitymeta *metadata.EntityMetadata) (err error) {
 
 func CreateFactory() *Factory {
 	factory := NewFactory()
-	factory.Use(adapter.Local(get_path()))
+	factory.Use(getAdapter())
 
 	return factory
 }

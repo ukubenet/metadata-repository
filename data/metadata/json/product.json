@@ -1,1 +1,0 @@
-{"entityName":"product","search":null,"attributes":{"image":{"type":"string"},"name":{"type":"string"},"specification_values":{"columns":{"specification_value":{"reference":"specification_value","type":"reference","view":["specification","value"]}},"type":"table"}},"updatedAt":"0001-01-01T00:00:00Z"}

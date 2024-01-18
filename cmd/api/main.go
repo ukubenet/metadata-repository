@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	appConfig "github.com/ukubenet/metadata-repository/config"
 )
 
 const version = "1.0.0"
@@ -28,6 +30,7 @@ type application struct {
 }
 
 func main() {
+	appConfig.LoadConfig("../../config", "app")
 	var cfg config
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")

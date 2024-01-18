@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/ukubenet/metadata-repository/metadata"
-	"github.com/ukubenet/metadata-repository/metadata/storage/adapter"
 )
 
 type (
@@ -134,7 +133,7 @@ func (p *Adapter) List(list *[]string) (err error) {
 
 func CreateFactory() *Factory {
 	factory := NewFactory()
-	factory.Use(adapter.JSON(get_json_path()))
+	factory.Use(getAdapter())
 
 	return factory
 }

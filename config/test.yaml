@@ -1,0 +1,8 @@
+deployer:
+    adapter: json_file
+    path: /
+
+metadata:
+    adapter: json_file
+    path: /
+
