@@ -2,23 +2,15 @@ package entity
 
 import "time"
 
-// type Type struct {
-// 	Name         string `json:"name"`
-// 	DataType     string `json:"dataType"`
-// 	NotNull      bool   `json:"notNull"`
-// 	DefaultValue string `json:"defaultValue"`
-// }
-
-type Entity struct {
+type CatalogEntity struct {
 	EntityName string          `json:"entityName"`
-	Identifier string          `json:"Identifier"`
+	Identifier string          `json:"identifier"`
 	Attributes AttributeValues `json:"attributes"`
-	UpdatedAt  time.Time       `json:"updatedAt"`
+}
+
+type EventEntity struct {
+	Entity    CatalogEntity
+	EventTime time.Time `json:"time"`
 }
 
 type AttributeValues map[string]any
-
-type ReferenceValue struct {
-	Reference string          `json:"reference"`
-	View      AttributeValues `json:"view"`
-}

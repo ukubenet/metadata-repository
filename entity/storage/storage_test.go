@@ -13,7 +13,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestReader(t *testing.T) {
-	entity := new(entity.Entity)
+	entity := new(entity.CatalogEntity)
 	name := "test"
 	identifier := "Test"
 
@@ -39,7 +39,7 @@ func TestReader(t *testing.T) {
 }
 
 func TestReplacer(t *testing.T) {
-	entity := new(entity.Entity)
+	entity := new(entity.CatalogEntity)
 	name := "test"
 	identifier := "Test"
 
@@ -66,7 +66,7 @@ func TestReplacer(t *testing.T) {
 }
 
 func TestEraser(t *testing.T) {
-	entity := new(entity.Entity)
+	entity := new(entity.CatalogEntity)
 	name := "test"
 	identifier := "EntityToDelete"
 
@@ -92,7 +92,7 @@ func TestEraser(t *testing.T) {
 func TestLister(t *testing.T) {
 	factory := CreateFactory()
 	adapter := factory.CreateAdapter()
-	list := []entity.Entity{}
+	list := []entity.CatalogEntity{}
 	name := "test"
 	adapter.List(name, &list)
 

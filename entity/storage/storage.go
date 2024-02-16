@@ -8,12 +8,12 @@ import (
 type (
 	// Reader implementations should decode values from a storage repository to a candidate
 	EntityReader interface {
-		Read(string, string, *entity.Entity) error
+		Read(string, string, *entity.CatalogEntity) error
 	}
 
 	// Replacer implementation should encode values from a candidate to a storage repository.
 	EntityReplacer interface {
-		Put(candidate *entity.Entity) error
+		Put(candidate *entity.CatalogEntity) error
 	}
 
 	// Delete implementations should delete entity
@@ -23,7 +23,7 @@ type (
 
 	// List implementations should show list of entities of specific type
 	EntityLister interface {
-		List(string, *[]entity.Entity) error
+		List(string, *[]entity.CatalogEntity) error
 	}
 
 	// List implementations should show list of entity types
@@ -108,14 +108,14 @@ func (f *EntityFactory) CreateAdapter() *Adapter {
 // Adapter
 
 // Adapter replace
-func (a *Adapter) Put(c *entity.Entity) error {
+func (a *Adapter) Put(c *entity.CatalogEntity) error {
 	inserter := a.factory.replacer
 
 	return inserter.Put(c)
 }
 
 // Adapter reader
-func (p *Adapter) Read(name string, identifier string, c *entity.Entity) (err error) {
+func (p *Adapter) Read(name string, identifier string, c *entity.CatalogEntity) (err error) {
 	reader := p.factory.reader
 	if err = reader.Read(name, identifier, c); err != nil {
 		return
@@ -135,7 +135,7 @@ func (p *Adapter) Delete(name string, identifier string) (err error) {
 }
 
 // Adapter list
-func (p *Adapter) List(name string, list *[]entity.Entity) (err error) {
+func (p *Adapter) List(name string, list *[]entity.CatalogEntity) (err error) {
 	lister := p.factory.lister
 	if err = lister.List(name, list); err != nil {
 		return
@@ -161,8 +161,8 @@ func CreateFactory() *EntityFactory {
 	return factory
 }
 
-func ReadEntity(name string, identifier string) (*entity.Entity, error) {
-	entity := new(entity.Entity)
+func ReadEntity(name string, identifier string) (*entity.CatalogEntity, error) {
+	entity := new(entity.CatalogEntity)
 	dbReader := CreateFactory()
 	adapter := dbReader.CreateAdapter()
 	err := adapter.Read(name, identifier, entity)

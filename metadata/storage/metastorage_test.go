@@ -16,7 +16,7 @@ func TestReader(t *testing.T) {
 	entity := new(metadata.EntityMetadata)
 	name := "test/Test"
 
-	reader := CreateFactory()
+	reader := CreateFactory(metadata.Catalog)
 	adapter := reader.CreateAdapter()
 	err := adapter.Read(name, entity)
 
@@ -37,7 +37,7 @@ func TestReplacer(t *testing.T) {
 	entity := new(metadata.EntityMetadata)
 	name := "test/Test"
 
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	adapter.Read(name, entity)
 	err := adapter.Put(entity)
@@ -60,7 +60,7 @@ func TestEraser(t *testing.T) {
 	name := "test/Test"
 	entityToDelete := "test/EntityToDelete"
 
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	adapter.Read(name, entity)
 	entity.EntityName = entityToDelete
@@ -80,7 +80,7 @@ func TestEraser(t *testing.T) {
 }
 
 func TestLister(t *testing.T) {
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	list := []string{}
 	adapter.List(&list)

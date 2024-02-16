@@ -1,9 +1,5 @@
 package metadata
 
-import (
-	"time"
-)
-
 const IntegerType = "integer"
 const NumberType = "number"
 const StringType = "string"
@@ -11,6 +7,17 @@ const DatetimeType = "dateTime"
 const BooleanType = "boolean"
 const ReferenceType = "reference"
 const TableType = "table"
+
+type EntityType int
+
+const (
+	Catalog EntityType = 1
+	Event   EntityType = 2
+)
+
+func (e EntityType) String() string {
+	return [...]string{"Catalog", "Event"}[e-1]
+}
 
 var AttributeTypeList = []string{
 	IntegerType,
@@ -24,9 +31,8 @@ var AttributeTypeList = []string{
 
 type EntityMetadata struct {
 	EntityName     string     `json:"entityName"`
-	SearchCriteria []string   `json:"search"`
+	SearchCriteria [][]string `json:"search"`
 	Attributes     Attributes `json:"attributes"`
-	UpdatedAt      time.Time  `json:"updatedAt"`
 }
 
 type Attributes map[string]Attribute

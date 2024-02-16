@@ -39,7 +39,7 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
-	entity := new(entity.Entity)
+	entity := new(entity.CatalogEntity)
 
 	parcel := getParcel(rw, r)
 	err := parcel.Decode(entity)
