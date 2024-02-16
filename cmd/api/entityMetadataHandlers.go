@@ -93,3 +93,83 @@ func (app *application) putCatalogMetadata(rw http.ResponseWriter, r *http.Reque
 
 	rw.WriteHeader(http.StatusCreated)
 }
+
+func (app *application) getEventMetadata(rw http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	name := params.ByName("name")
+
+	entity, err := metaapi.ReadEventMetadata(name)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	parcel := getParcel(rw, r)
+	parcel.Encode(http.StatusFound, entity)
+
+}
+
+func (app *application) getEventMetadataList(w http.ResponseWriter, r *http.Request) {
+	list, err := metaapi.ReadEventMetadataList()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	parcel := getParcel(w, r)
+	parcel.Encode(http.StatusOK, list)
+}
+
+func (app *application) deleteEventMetadata(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	name := params.ByName("name")
+
+	entity, err := metaapi.ReadEventMetadata(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory(metadata.Event)
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Delete(entity)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.DeleteEventMetadata(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *application) putEventMetadata(rw http.ResponseWriter, r *http.Request) {
+	entityMetadata := new(metadata.EntityMetadata)
+
+	parcel := getParcel(rw, r)
+	err := parcel.Decode(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.PutEventMetadata(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory(metadata.Event)
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Deploy(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rw.WriteHeader(http.StatusCreated)
+}
