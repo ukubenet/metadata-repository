@@ -9,11 +9,11 @@ import (
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
-func (app *application) getOneEntityMetadata(rw http.ResponseWriter, r *http.Request) {
+func (app *application) getCatalogMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 
-	entity, err := metaapi.ReadMetadata(name)
+	entity, err := metaapi.ReadCatalogMetadata(name)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -24,8 +24,8 @@ func (app *application) getOneEntityMetadata(rw http.ResponseWriter, r *http.Req
 
 }
 
-func (app *application) getAllEntityMetadataList(w http.ResponseWriter, r *http.Request) {
-	list, err := metaapi.ReadMetadataList()
+func (app *application) getCatalogMetadataList(w http.ResponseWriter, r *http.Request) {
+	list, err := metaapi.ReadCatalogMetadataList()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -40,17 +40,17 @@ func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Requ
 	parcel.Encode(http.StatusOK, metadata.AttributeTypeList)
 }
 
-func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Request) {
+func (app *application) deleteCatalogMetadata(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 
-	entity, err := metaapi.ReadMetadata(name)
+	entity, err := metaapi.ReadCatalogMetadata(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory()
+	deployerFactory := deployer.CreateFactory(metadata.Catalog)
 	adapter := deployerFactory.CreateAdapter()
 	err = adapter.Delete(entity)
 	if err != nil {
@@ -58,7 +58,7 @@ func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	err = metaapi.DeleteMetadata(name)
+	err = metaapi.DeleteCatalogMetadata(name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -67,25 +67,105 @@ func (app *application) deleteEntityMetadata(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-func (app *application) putEntityMetadata(rw http.ResponseWriter, r *http.Request) {
-	metadata := new(metadata.EntityMetadata)
+func (app *application) putCatalogMetadata(rw http.ResponseWriter, r *http.Request) {
+	entityMetadata := new(metadata.EntityMetadata)
 
 	parcel := getParcel(rw, r)
-	err := parcel.Decode(metadata)
+	err := parcel.Decode(entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = metaapi.PutMetadata(metadata)
+	err = metaapi.PutCatalogMetadata(entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory()
+	deployerFactory := deployer.CreateFactory(metadata.Catalog)
 	adapter := deployerFactory.CreateAdapter()
-	err = adapter.Deploy(metadata)
+	err = adapter.Deploy(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rw.WriteHeader(http.StatusCreated)
+}
+
+func (app *application) getEventMetadata(rw http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	name := params.ByName("name")
+
+	entity, err := metaapi.ReadEventMetadata(name)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	parcel := getParcel(rw, r)
+	parcel.Encode(http.StatusFound, entity)
+
+}
+
+func (app *application) getEventMetadataList(w http.ResponseWriter, r *http.Request) {
+	list, err := metaapi.ReadEventMetadataList()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	parcel := getParcel(w, r)
+	parcel.Encode(http.StatusOK, list)
+}
+
+func (app *application) deleteEventMetadata(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	name := params.ByName("name")
+
+	entity, err := metaapi.ReadEventMetadata(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory(metadata.Event)
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Delete(entity)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.DeleteEventMetadata(name)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *application) putEventMetadata(rw http.ResponseWriter, r *http.Request) {
+	entityMetadata := new(metadata.EntityMetadata)
+
+	parcel := getParcel(rw, r)
+	err := parcel.Decode(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.PutEventMetadata(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	deployerFactory := deployer.CreateFactory(metadata.Event)
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Deploy(entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return

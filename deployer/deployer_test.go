@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	config "github.com/ukubenet/metadata-repository/config"
+	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
@@ -13,12 +14,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestDeployer(t *testing.T) {
-	entity, err := metaapi.ReadMetadata("test")
+	entity, err := metaapi.ReadCatalogMetadata("test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	deployer := CreateFactory()
+	deployer := CreateFactory(metadata.Catalog)
 	adapter := deployer.CreateAdapter()
 	err = adapter.Deploy(entity)
 
@@ -28,12 +29,12 @@ func TestDeployer(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	entity, err := metaapi.ReadMetadata("test")
+	entity, err := metaapi.ReadCatalogMetadata("test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	deployer := CreateFactory()
+	deployer := CreateFactory(metadata.Catalog)
 	adapter := deployer.CreateAdapter()
 	err = adapter.Delete(entity)
 

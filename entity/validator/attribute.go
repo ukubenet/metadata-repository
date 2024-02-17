@@ -11,7 +11,7 @@ import (
 )
 
 func ValidateAttributeValues(entity string, values entity.AttributeValues) (err error) {
-	meta, err := metaapi.ReadMetadata(entity)
+	meta, err := metaapi.ReadCatalogMetadata(entity)
 	if err != nil {
 		return fmt.Errorf("error reading meta of entity %q", entity)
 	}

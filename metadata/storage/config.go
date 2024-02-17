@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/ukubenet/metadata-repository/config"
+	"github.com/ukubenet/metadata-repository/metadata"
 	"github.com/ukubenet/metadata-repository/metadata/storage/adapter"
 )
 
@@ -14,9 +15,9 @@ func get_json_path() string {
 	return path + config.Config.Metadata.Path
 }
 
-func getAdapter() interface{} {
+func getAdapter(e metadata.EntityType) interface{} {
 	if config.Config.Metadata.Adapter == JSON {
-		return adapter.JSON(get_json_path())
+		return adapter.JSON(get_json_path() + e.String() + "/")
 	} else {
 		panic("Undefined adapter!")
 	}

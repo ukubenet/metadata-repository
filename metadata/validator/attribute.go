@@ -54,7 +54,7 @@ func validateReference(name string, attribute metadata.Attribute) (err error) {
 		return fmt.Errorf("reference of attribute %q is not a string", name)
 	}
 
-	refEntity, err := metastorage.ReadMetadata(reference.(string))
+	refEntity, err := metastorage.ReadMetadata(reference.(string), metadata.Catalog)
 	if err != nil {
 		return fmt.Errorf(
 			"error to read reference in attribute %q: %q",

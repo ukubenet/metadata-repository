@@ -8,7 +8,7 @@ import (
 	entityvalidator "github.com/ukubenet/metadata-repository/entity/validator"
 )
 
-func ReadEntity(name string, identifier string) (*entity.Entity, error) {
+func ReadEntity(name string, identifier string) (*entity.CatalogEntity, error) {
 	entity, err := storage.ReadEntity(name, identifier)
 	if err != nil {
 		return entity, err
@@ -17,7 +17,7 @@ func ReadEntity(name string, identifier string) (*entity.Entity, error) {
 	return entity, err
 }
 
-func PutEntity(entity *entity.Entity) error {
+func PutEntity(entity *entity.CatalogEntity) error {
 
 	if entity.EntityName == "" {
 		return errors.New("entity name not defined")
@@ -47,10 +47,10 @@ func DeleteEntity(name string, identifier string) error {
 	return err
 }
 
-func ReadEntities(name string) ([]entity.Entity, error) {
+func ReadEntities(name string) ([]entity.CatalogEntity, error) {
 	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
-	list := []entity.Entity{}
+	list := []entity.CatalogEntity{}
 	err := adapter.List(name, &list)
 
 	return list, err

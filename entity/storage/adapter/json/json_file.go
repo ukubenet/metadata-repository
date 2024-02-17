@@ -39,7 +39,7 @@ func JSONIndent(amt int) *JSONCodec {
 }
 
 // Read entity from a json file
-func (jc *JSONCodec) Read(entityName string, identifier string, candidate *entity.Entity) (err error) {
+func (jc *JSONCodec) Read(entityName string, identifier string, candidate *entity.CatalogEntity) (err error) {
 
 	file, err := os.Open(jc.path + entityName + "/" + identifier + Ext)
 	if err != nil {
@@ -60,7 +60,7 @@ func (jc *JSONCodec) Read(entityName string, identifier string, candidate *entit
 }
 
 // Save the entity to JSON file
-func (jc *JSONCodec) Put(candidate *entity.Entity) (err error) {
+func (jc *JSONCodec) Put(candidate *entity.CatalogEntity) (err error) {
 	var output []byte
 
 	if jc.indent != "" {
@@ -85,7 +85,7 @@ func (jc *JSONCodec) Delete(entityName string, identifier string) (err error) {
 }
 
 // Show contents of entities of specific type read from json
-func (jc *JSONCodec) List(entityName string, list *[]entity.Entity) (err error) {
+func (jc *JSONCodec) List(entityName string, list *[]entity.CatalogEntity) (err error) {
 	filepath.WalkDir(jc.path+entityName, func(path string, info fs.DirEntry, err error) error {
 		return warkpath(jc, entityName, Ext, list, path, info, err)
 	})
@@ -93,7 +93,7 @@ func (jc *JSONCodec) List(entityName string, list *[]entity.Entity) (err error) 
 	return
 }
 
-func warkpath(jc *JSONCodec, entityName string, ext string, list *[]entity.Entity, path string, info fs.DirEntry, err error) error {
+func warkpath(jc *JSONCodec, entityName string, ext string, list *[]entity.CatalogEntity, path string, info fs.DirEntry, err error) error {
 	if err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func warkpath(jc *JSONCodec, entityName string, ext string, list *[]entity.Entit
 	var filename string = info.Name()
 	if filepath.Ext(filename) == ext {
 		var identifier = filename[0 : len(filename)-len(ext)]
-		entity := new(entity.Entity)
+		entity := new(entity.CatalogEntity)
 		jc.Read(entityName, identifier, entity)
 		*list = append(*list, *entity)
 	}

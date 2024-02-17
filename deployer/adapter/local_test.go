@@ -20,7 +20,7 @@ func TestMain(m *testing.M) {
 func TestLocalDeployer(t *testing.T) {
 	deployer := Local(path)
 
-	entity, _ := metaapi.ReadMetadata("test")
+	entity, _ := metaapi.ReadCatalogMetadata("test")
 
 	err := deployer.Deploy(entity)
 	if err != nil {

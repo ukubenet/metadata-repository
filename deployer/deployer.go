@@ -63,33 +63,33 @@ func (p *Adapter) Delete(entitymeta *metadata.EntityMetadata) (err error) {
 	return
 }
 
-func CreateFactory() *Factory {
+func CreateFactory(e metadata.EntityType) *Factory {
 	factory := NewFactory()
-	factory.Use(getAdapter())
+	factory.Use(getAdapter(e))
 
 	return factory
 }
 
-func DeployMetadata(entitymeta *metadata.EntityMetadata) error {
+func DeployMetadata(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
 	if entitymeta.EntityName == "" {
 		return errors.New("entity name not defined")
 	}
 
 	entity := new(metadata.EntityMetadata)
-	dbReader := CreateFactory()
+	dbReader := CreateFactory(entityType)
 	adapter := dbReader.CreateAdapter()
 	err := adapter.Deploy(entity)
 
 	return err
 }
 
-func Delete(entitymeta *metadata.EntityMetadata) error {
+func Delete(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
 	if entitymeta.EntityName == "" {
 		return errors.New("entity name not defined")
 	}
 
 	entity := new(metadata.EntityMetadata)
-	dbReader := CreateFactory()
+	dbReader := CreateFactory(entityType)
 	adapter := dbReader.CreateAdapter()
 	err := adapter.Deploy(entity)
 

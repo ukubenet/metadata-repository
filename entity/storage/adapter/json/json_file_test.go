@@ -18,7 +18,7 @@ func TestMain(m *testing.M) {
 func TestJsonReader(t *testing.T) {
 	reader := JSON(path)
 
-	entity := new(entity.Entity)
+	entity := new(entity.CatalogEntity)
 
 	err := reader.Read("test", "Test", entity)
 	if err != nil {
@@ -45,7 +45,7 @@ func TestJsonReplacer(t *testing.T) {
 		"number_attribute": 100,
 	}
 
-	var candidate *entity.Entity = &entity.Entity{
+	var candidate *entity.CatalogEntity = &entity.CatalogEntity{
 		EntityName: "test",
 		Attributes: attributes,
 		Identifier: "Test",
@@ -56,7 +56,7 @@ func TestJsonReplacer(t *testing.T) {
 
 func TestJsonLister(t *testing.T) {
 	lister := JSON(path)
-	list := []entity.Entity{}
+	list := []entity.CatalogEntity{}
 
 	lister.List("test", &list)
 
