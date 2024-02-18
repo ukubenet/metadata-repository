@@ -84,7 +84,7 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 		return fmt.Errorf("view of reference attribute %q is not a map", name)
 	}
 
-	refEntity, err := entitystorage.ReadEntity(meta["reference"].(string), reference)
+	refEntity, err := entitystorage.ReadCatalogEntity(meta["reference"].(string), reference)
 	if err != nil {
 		return fmt.Errorf("error to read reference %q in attribute %q", reference, name)
 	}

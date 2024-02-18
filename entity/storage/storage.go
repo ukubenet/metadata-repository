@@ -3,6 +3,7 @@ package entitystorage
 
 import (
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 type (
@@ -154,16 +155,16 @@ func (p *Adapter) TypeList(list *[]string) (err error) {
 	return
 }
 
-func CreateFactory() *EntityFactory {
+func CreateFactory(entityType metadata.EntityType) *EntityFactory {
 	factory := NewFactory()
-	factory.Use(getAdapter())
+	factory.Use(getAdapter(entityType))
 
 	return factory
 }
 
-func ReadEntity(name string, identifier string) (*entity.CatalogEntity, error) {
+func ReadCatalogEntity(name string, identifier string) (*entity.CatalogEntity, error) {
 	entity := new(entity.CatalogEntity)
-	dbReader := CreateFactory()
+	dbReader := CreateFactory(metadata.Catalog)
 	adapter := dbReader.CreateAdapter()
 	err := adapter.Read(name, identifier, entity)
 

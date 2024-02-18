@@ -5,6 +5,7 @@ import (
 
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestMain(m *testing.M) {
@@ -17,7 +18,7 @@ func TestReader(t *testing.T) {
 	name := "test"
 	identifier := "Test"
 
-	reader := CreateFactory()
+	reader := CreateFactory(metadata.Catalog)
 	adapter := reader.CreateAdapter()
 	err := adapter.Read(name, identifier, entity)
 
@@ -43,7 +44,7 @@ func TestReplacer(t *testing.T) {
 	name := "test"
 	identifier := "Test"
 
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	adapter.Read(name, identifier, entity)
 	err := adapter.Put(entity)
@@ -70,7 +71,7 @@ func TestEraser(t *testing.T) {
 	name := "test"
 	identifier := "EntityToDelete"
 
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	entity.EntityName = name
 	entity.Identifier = identifier
@@ -90,7 +91,7 @@ func TestEraser(t *testing.T) {
 }
 
 func TestLister(t *testing.T) {
-	factory := CreateFactory()
+	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
 	list := []entity.CatalogEntity{}
 	name := "test"

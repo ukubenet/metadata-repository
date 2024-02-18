@@ -13,4 +13,8 @@ type EventEntity struct {
 	EventTime time.Time `json:"time"`
 }
 
+type Entity interface {
+    CatalogEntity | EventEntity
+}
+
 type AttributeValues map[string]any
