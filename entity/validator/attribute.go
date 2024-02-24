@@ -11,8 +11,8 @@ import (
 	metavalidator "github.com/ukubenet/metadata-repository/metadata/validator"
 )
 
-func ValidateAttributeValues(entity string, values entity.AttributeValues) (err error) {
-	meta, err := metaapi.ReadCatalogMetadata(entity)
+func ValidateAttributeValues(entityType metadata.EntityType, entity string, values entity.AttributeValues) (err error) {
+	meta, err := metaapi.ReadMetadata(entityType, entity)
 	if err != nil {
 		return fmt.Errorf("error reading meta of entity %q", entity)
 	}

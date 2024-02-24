@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/entity"
@@ -121,6 +122,10 @@ func (app *application) putEventEntity(rw http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	if entity.EventTime.IsZero() {
+		entity.EventTime = time.Now()
 	}
 
 	err = entityapi.PutEntity(entity)

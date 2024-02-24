@@ -29,7 +29,7 @@ func PutEntity(entity entity.Entity) error {
 	if len(entity.GetAttributes()) == 0 {
 		return errors.New("entity attributes not defined")
 	}
-	if err := entityvalidator.ValidateAttributeValues(entity.GetName(), entity.GetAttributes()); err != nil {
+	if err := entityvalidator.ValidateAttributeValues(entity.GetType(), entity.GetName(), entity.GetAttributes()); err != nil {
 		return err
 	}
 

@@ -2,6 +2,7 @@ package metaapi
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/ukubenet/metadata-repository/metadata"
 	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
@@ -72,4 +73,14 @@ func PutEventMetadata(entitymeta *metadata.EntityMetadata) error {
 
 func DeleteEventMetadata(name string) error {
 	return metastorage.DeleteMetadata(name, metadata.Event)
+}
+
+func ReadMetadata(entityType metadata.EntityType, name string) (*metadata.EntityMetadata, error) {
+	if entityType == metadata.Catalog {
+		return ReadCatalogMetadata(name)
+	} else if entityType == metadata.Event {
+		return ReadEventMetadata(name)
+	}
+
+	return nil, fmt.Errorf("no such entity type %q", entityType)
 }
