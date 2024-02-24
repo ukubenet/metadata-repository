@@ -2,6 +2,7 @@ package entityvalidator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ukubenet/metadata-repository/entity"
 	entitystorage "github.com/ukubenet/metadata-repository/entity/storage"
@@ -75,6 +76,16 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 		return fmt.Errorf("reference of attribute %q does not exist or not a string", name)
 	}
 
+	referenceTypeString, ok := referenceMap["referenceType"].(string)
+	if !ok {
+		return fmt.Errorf("reference of attribute %q does not exist or not a string", name)
+	}
+
+	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(referenceTypeString)]
+	if !ok {
+		return fmt.Errorf("reference type %q of attribute %q does not exist", referenceTypeString, name)
+	}
+
 	view, ok := referenceMap["view"]
 	if !ok {
 		return fmt.Errorf("view of reference attribute %q is not present", name)
@@ -84,13 +95,13 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 		return fmt.Errorf("view of reference attribute %q is not a map", name)
 	}
 
-	refEntity, err := entitystorage.ReadCatalogEntity(meta["reference"].(string), reference)
+	refEntity, err := entitystorage.ReadEntity(referenceType, meta["reference"].(string), reference)
 	if err != nil {
 		return fmt.Errorf("error to read reference %q in attribute %q", reference, name)
 	}
 
 	for key, elem := range view.(map[string]any) {
-		refValue, ok := refEntity.Attributes[key]
+		refValue, ok := refEntity.GetAttributes()[key]
 		if !ok {
 			return fmt.Errorf("attribute %q is not present in reference entity %q. entity attribute: %q", key, reference, name)
 		}

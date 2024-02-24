@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 var path string
@@ -18,22 +19,20 @@ func TestMain(m *testing.M) {
 func TestJsonReader(t *testing.T) {
 	reader := JSON(path)
 
-	entity := new(entity.CatalogEntity)
-
-	err := reader.Read("test", "Test", entity)
+	entity, err := reader.Read(metadata.Catalog, "test", "Test")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if entity.EntityName != "test" {
+	if entity.GetName() != "test" {
 		t.Fail()
 	}
 
-	if entity.Identifier != "Test" {
+	if entity.GetID() != "Test" {
 		t.Fail()
 	}
 
-	if entity.Attributes == nil {
+	if entity.GetAttributes() == nil {
 		t.Fail()
 	}
 }
@@ -45,10 +44,12 @@ func TestJsonReplacer(t *testing.T) {
 		"number_attribute": 100,
 	}
 
-	var candidate *entity.CatalogEntity = &entity.CatalogEntity{
-		EntityName: "test",
-		Attributes: attributes,
-		Identifier: "Test",
+	var candidate = entity.CatalogEntity{
+		Metadata: entity.Metadata{
+			EntityName: "test",
+			Attributes: attributes,
+			Identifier: "Test",
+		},
 	}
 
 	inserter.Put(candidate)
@@ -56,24 +57,22 @@ func TestJsonReplacer(t *testing.T) {
 
 func TestJsonLister(t *testing.T) {
 	lister := JSON(path)
-	list := []entity.CatalogEntity{}
 
-	lister.List("test", &list)
+	list, _ := lister.List(metadata.Catalog, "test")
 
 	if len(list) != 1 {
 		t.Fail()
 	}
 
-	if list[0].Identifier != "Test" {
+	if list[0].GetID() != "Test" {
 		t.Fail()
 	}
 }
 
 func TestJsonTypeLister(t *testing.T) {
 	lister := JSON(path)
-	list := []string{}
 
-	lister.TypeList(&list)
+	list, _ := lister.TypeList(metadata.Catalog)
 
 	if len(list) != 1 {
 		t.Fail()

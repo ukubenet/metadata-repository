@@ -19,6 +19,13 @@ func (e EntityType) String() string {
 	return [...]string{"Catalog", "Event"}[e-1]
 }
 
+var (
+	EntityTypeMap = map[string]EntityType{
+		"catalog": Catalog,
+		"event":   Event,
+	}
+)
+
 var AttributeTypeList = []string{
 	IntegerType,
 	NumberType,

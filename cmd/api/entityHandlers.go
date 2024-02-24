@@ -6,6 +6,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func (app *application) getOneCatalogEntity(rw http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func (app *application) getOneCatalogEntity(rw http.ResponseWriter, r *http.Requ
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 
-	entity, err := entityapi.ReadCatalogEntity(name, identifier)
+	entity, err := entityapi.ReadEntity(metadata.Catalog, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -28,7 +29,7 @@ func (app *application) getAllCatalogEntities(w http.ResponseWriter, r *http.Req
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 
-	list, err := entityapi.ReadCatalogEntities(name)
+	list, err := entityapi.ReadEntities(metadata.Catalog, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -48,7 +49,7 @@ func (app *application) putCatalogEntity(rw http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err = entityapi.PutCatalogEntity(entity)
+	err = entityapi.PutEntity(entity)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -62,7 +63,7 @@ func (app *application) deleteCatalogEntity(rw http.ResponseWriter, r *http.Requ
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 
-	err := entityapi.DeleteCatalogEntity(name, identifier)
+	err := entityapi.DeleteEntity(metadata.Catalog, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -72,7 +73,7 @@ func (app *application) deleteCatalogEntity(rw http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) getAllCatalogEntityTypes(w http.ResponseWriter, r *http.Request) {
-	list, err := entityapi.ReadCatalogEntityTypes()
+	list, err := entityapi.ReadEntityTypes(metadata.Catalog)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -88,7 +89,7 @@ func (app *application) getOneEventEntity(rw http.ResponseWriter, r *http.Reques
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 
-	entity, err := entityapi.ReadCatalogEntity(name, identifier)
+	entity, err := entityapi.ReadEntity(metadata.Event, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -102,7 +103,7 @@ func (app *application) getAllEventEntities(w http.ResponseWriter, r *http.Reque
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 
-	list, err := entityapi.ReadCatalogEntities(name)
+	list, err := entityapi.ReadEntities(metadata.Event, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -113,7 +114,7 @@ func (app *application) getAllEventEntities(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *application) putEventEntity(rw http.ResponseWriter, r *http.Request) {
-	entity := new(entity.CatalogEntity)
+	entity := new(entity.EventEntity)
 
 	parcel := getParcel(rw, r)
 	err := parcel.Decode(entity)
@@ -122,7 +123,7 @@ func (app *application) putEventEntity(rw http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = entityapi.PutCatalogEntity(entity)
+	err = entityapi.PutEntity(entity)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -136,7 +137,7 @@ func (app *application) deleteEventEntity(rw http.ResponseWriter, r *http.Reques
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 
-	err := entityapi.DeleteCatalogEntity(name, identifier)
+	err := entityapi.DeleteEntity(metadata.Event, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -146,7 +147,7 @@ func (app *application) deleteEventEntity(rw http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) getAllEventEntityTypes(w http.ResponseWriter, r *http.Request) {
-	list, err := entityapi.ReadCatalogEntityTypes()
+	list, err := entityapi.ReadEntityTypes(metadata.Event)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

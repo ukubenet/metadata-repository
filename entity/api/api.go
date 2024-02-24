@@ -9,8 +9,8 @@ import (
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
-func ReadCatalogEntity(name string, identifier string) (*entity.CatalogEntity, error) {
-	entity, err := storage.ReadCatalogEntity(name, identifier)
+func ReadEntity(entityType metadata.EntityType, name string, identifier string) (entity.Entity, error) {
+	entity, err := storage.ReadEntity(entityType, name, identifier)
 	if err != nil {
 		return entity, err
 	}
@@ -18,50 +18,50 @@ func ReadCatalogEntity(name string, identifier string) (*entity.CatalogEntity, e
 	return entity, err
 }
 
-func PutCatalogEntity(entity *entity.CatalogEntity) error {
+func PutEntity(entity entity.Entity) error {
 
-	if entity.EntityName == "" {
+	if entity.GetName() == "" {
 		return errors.New("entity name not defined")
 	}
-	if entity.Identifier == "" {
+	if entity.GetID() == "" {
 		return errors.New("entity identifier not defined")
 	}
-	if len(entity.Attributes) == 0 {
+	if len(entity.GetAttributes()) == 0 {
 		return errors.New("entity attributes not defined")
 	}
-	if err := entityvalidator.ValidateAttributeValues(entity.EntityName, entity.Attributes); err != nil {
+	if err := entityvalidator.ValidateAttributeValues(entity.GetName(), entity.GetAttributes()); err != nil {
 		return err
 	}
 
-	factoryWriter := storage.CreateFactory(metadata.Catalog)
+	factoryWriter := storage.CreateFactory()
 	adapter := factoryWriter.CreateAdapter()
 	err := adapter.Put(entity)
 
 	return err
 }
 
-func DeleteCatalogEntity(name string, identifier string) error {
-	storage := storage.CreateFactory(metadata.Catalog)
+func DeleteEntity(entityType metadata.EntityType, name string, identifier string) error {
+	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
-	err := adapter.Delete(name, identifier)
+	err := adapter.Delete(entityType, name, identifier)
 
 	return err
 }
 
-func ReadCatalogEntities(name string) ([]entity.CatalogEntity, error) {
-	storage := storage.CreateFactory(metadata.Catalog)
+func ReadEntities(entityType metadata.EntityType, name string) ([]entity.Entity, error) {
+	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
-	list := []entity.CatalogEntity{}
-	err := adapter.List(name, &list)
+
+	list, err := adapter.List(entityType, name)
 
 	return list, err
 }
 
-func ReadCatalogEntityTypes() ([]string, error) {
-	storage := storage.CreateFactory(metadata.Catalog)
+func ReadEntityTypes(entityType metadata.EntityType) ([]string, error) {
+	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
-	list := []string{}
-	err := adapter.TypeList(&list)
+
+	list, err := adapter.TypeList(entityType)
 
 	return list, err
 }

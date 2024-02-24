@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 const Ext string = ".json"
@@ -39,11 +40,11 @@ func JSONIndent(amt int) *JSONCodec {
 }
 
 // Read entity from a json file
-func (jc *JSONCodec) Read(entityName string, identifier string, candidate *entity.CatalogEntity) (err error) {
+func (jc *JSONCodec) Read(entityType metadata.EntityType, entityName string, identifier string) (e entity.Entity, err error) {
 
-	file, err := os.Open(jc.path + entityName + "/" + identifier + Ext)
+	file, err := os.Open(jc.path + entityType.String() + "/" + entityName + "/" + identifier + Ext)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	// close fi on exit and check for its returned error
@@ -54,46 +55,47 @@ func (jc *JSONCodec) Read(entityName string, identifier string, candidate *entit
 	}()
 
 	jsonParser := json.NewDecoder(file)
-	jsonParser.Decode(candidate)
+	e = entity.GetEntityInstance(entityType)
+	jsonParser.Decode(e)
 
-	return
+	return e, nil
 }
 
 // Save the entity to JSON file
-func (jc *JSONCodec) Put(candidate *entity.CatalogEntity) (err error) {
+func (jc *JSONCodec) Put(e entity.Entity) (err error) {
 	var output []byte
 
 	if jc.indent != "" {
-		output, err = json.MarshalIndent(candidate, "", jc.indent)
+		output, err = json.MarshalIndent(e, "", jc.indent)
 	} else {
-		output, err = json.Marshal(candidate)
+		output, err = json.Marshal(e)
 	}
 
 	if err != nil {
 		return
 	}
 
-	os.WriteFile(jc.path+candidate.EntityName+"/"+candidate.Identifier+Ext, output, 0644)
+	os.WriteFile(jc.path+e.GetType().String()+"/"+e.GetName()+"/"+e.GetID()+Ext, output, 0644)
 
 	return
 }
 
 // Delete a json file containing entity
-func (jc *JSONCodec) Delete(entityName string, identifier string) (err error) {
-	err = os.Remove(jc.path + entityName + "/" + identifier + Ext)
+func (jc *JSONCodec) Delete(entityType metadata.EntityType, entityName string, identifier string) (err error) {
+	err = os.Remove(jc.path + entityType.String() + "/" + entityName + "/" + identifier + Ext)
 	return
 }
 
 // Show contents of entities of specific type read from json
-func (jc *JSONCodec) List(entityName string, list *[]entity.CatalogEntity) (err error) {
-	filepath.WalkDir(jc.path+entityName, func(path string, info fs.DirEntry, err error) error {
-		return warkpath(jc, entityName, Ext, list, path, info, err)
+func (jc *JSONCodec) List(entityType metadata.EntityType, entityName string) (list []entity.Entity, err error) {
+	filepath.WalkDir(jc.path+entityType.String()+"/"+entityName, func(path string, info fs.DirEntry, err error) error {
+		return warkpath(jc, entityType, entityName, Ext, &list, path, info, err)
 	})
 
 	return
 }
 
-func warkpath(jc *JSONCodec, entityName string, ext string, list *[]entity.CatalogEntity, path string, info fs.DirEntry, err error) error {
+func warkpath(jc *JSONCodec, entityType metadata.EntityType, entityName string, ext string, list *[]entity.Entity, path string, info fs.DirEntry, err error) error {
 	if err != nil {
 		return err
 	}
@@ -101,24 +103,23 @@ func warkpath(jc *JSONCodec, entityName string, ext string, list *[]entity.Catal
 	var filename string = info.Name()
 	if filepath.Ext(filename) == ext {
 		var identifier = filename[0 : len(filename)-len(ext)]
-		entity := new(entity.CatalogEntity)
-		jc.Read(entityName, identifier, entity)
-		*list = append(*list, *entity)
+		var e, _ = jc.Read(entityType, entityName, identifier)
+		*list = append(*list, e)
 	}
 
 	return nil
 }
 
 // Show list of entity types
-func (jc *JSONCodec) TypeList(list *[]string) (err error) {
-	files, err := ioutil.ReadDir(jc.path)
+func (jc *JSONCodec) TypeList(entityType metadata.EntityType) (list []string, err error) {
+	files, err := ioutil.ReadDir(jc.path + entityType.String() + "/")
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for _, file := range files {
 		if file.IsDir() {
-			*list = append(*list, file.Name())
+			list = append(list, file.Name())
 		}
 	}
 
