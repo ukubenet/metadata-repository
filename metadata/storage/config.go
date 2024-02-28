@@ -10,14 +10,14 @@ import (
 
 const JSON = "json_file"
 
-func get_json_path() string {
+func get_json_path(entityType metadata.EntityType) string {
 	path, _ := os.Getwd()
-	return path + config.Config.Metadata.Path
+	return path + config.Config.Metadata.Path + entityType.String() + "/"
 }
 
-func getAdapter(e metadata.EntityType) interface{} {
+func getAdapter(entityType metadata.EntityType) interface{} {
 	if config.Config.Metadata.Adapter == JSON {
-		return adapter.JSON(get_json_path() + e.String() + "/")
+		return adapter.JSON(get_json_path(entityType))
 	} else {
 		panic("Undefined adapter!")
 	}

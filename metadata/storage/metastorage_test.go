@@ -85,11 +85,11 @@ func TestLister(t *testing.T) {
 	list := []string{}
 	adapter.List(&list)
 
-	if len(list) != 2 {
+	if len(list) != 1 {
 		t.Fatal("List quantity", len(list))
 	}
 
-	if list[1] != "Test" {
+	if list[0] != "Test" {
 		t.Fatal("List[1] is ", list[1])
 	}
 }

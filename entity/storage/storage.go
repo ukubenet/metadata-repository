@@ -3,32 +3,33 @@ package entitystorage
 
 import (
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 type (
 	// Reader implementations should decode values from a storage repository to a candidate
 	EntityReader interface {
-		Read(string, string, *entity.CatalogEntity) error
+		Read(entityType metadata.EntityType, entityName string, identifier string) (e entity.Entity, err error)
 	}
 
 	// Replacer implementation should encode values from a candidate to a storage repository.
 	EntityReplacer interface {
-		Put(candidate *entity.CatalogEntity) error
+		Put(candidate entity.Entity) error
 	}
 
 	// Delete implementations should delete entity
 	EntityEraser interface {
-		Delete(string, string) error
+		Delete(metadata.EntityType, string, string) error
 	}
 
 	// List implementations should show list of entities of specific type
 	EntityLister interface {
-		List(string, *[]entity.CatalogEntity) error
+		List(metadata.EntityType, string) ([]entity.Entity, error)
 	}
 
 	// List implementations should show list of entity types
 	EntityTypeLister interface {
-		TypeList(*[]string) error
+		TypeList(metadata.EntityType) ([]string, error)
 	}
 
 	// Adapter is a simple reference structure that
@@ -108,16 +109,16 @@ func (f *EntityFactory) CreateAdapter() *Adapter {
 // Adapter
 
 // Adapter replace
-func (a *Adapter) Put(c *entity.CatalogEntity) error {
+func (a *Adapter) Put(c entity.Entity) error {
 	inserter := a.factory.replacer
 
 	return inserter.Put(c)
 }
 
 // Adapter reader
-func (p *Adapter) Read(name string, identifier string, c *entity.CatalogEntity) (err error) {
+func (p *Adapter) Read(entityType metadata.EntityType, name string, identifier string) (e entity.Entity, err error) {
 	reader := p.factory.reader
-	if err = reader.Read(name, identifier, c); err != nil {
+	if e, err = reader.Read(entityType, name, identifier); err != nil {
 		return
 	}
 
@@ -125,9 +126,9 @@ func (p *Adapter) Read(name string, identifier string, c *entity.CatalogEntity) 
 }
 
 // Adapter delete
-func (p *Adapter) Delete(name string, identifier string) (err error) {
+func (p *Adapter) Delete(entityType metadata.EntityType, name string, identifier string) (err error) {
 	eraser := p.factory.eraser
-	if err = eraser.Delete(name, identifier); err != nil {
+	if err = eraser.Delete(entityType, name, identifier); err != nil {
 		return
 	}
 
@@ -135,9 +136,9 @@ func (p *Adapter) Delete(name string, identifier string) (err error) {
 }
 
 // Adapter list
-func (p *Adapter) List(name string, list *[]entity.CatalogEntity) (err error) {
+func (p *Adapter) List(entityType metadata.EntityType, name string) (list []entity.Entity, err error) {
 	lister := p.factory.lister
-	if err = lister.List(name, list); err != nil {
+	if list, err = lister.List(entityType, name); err != nil {
 		return
 	}
 
@@ -145,9 +146,9 @@ func (p *Adapter) List(name string, list *[]entity.CatalogEntity) (err error) {
 }
 
 // Adapter type list
-func (p *Adapter) TypeList(list *[]string) (err error) {
+func (p *Adapter) TypeList(entityType metadata.EntityType) (list []string, err error) {
 	lister := p.factory.typeLister
-	if err = lister.TypeList(list); err != nil {
+	if list, err = lister.TypeList(entityType); err != nil {
 		return
 	}
 
@@ -161,11 +162,10 @@ func CreateFactory() *EntityFactory {
 	return factory
 }
 
-func ReadEntity(name string, identifier string) (*entity.CatalogEntity, error) {
-	entity := new(entity.CatalogEntity)
+func ReadEntity(entityType metadata.EntityType, name string, identifier string) (entity entity.Entity, err error) {
 	dbReader := CreateFactory()
 	adapter := dbReader.CreateAdapter()
-	err := adapter.Read(name, identifier, entity)
+	entity, err = adapter.Read(entityType, name, identifier)
 
 	return entity, err
 }
