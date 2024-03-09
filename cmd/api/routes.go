@@ -35,5 +35,16 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/v1/event-entity/:name/:identifier", app.deleteEventEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/events", app.getAllEventEntityTypes)
 
+	router.HandlerFunc(http.MethodGet, "/v1/catalog-edit/:name/:identifier", app.editCatalogEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/catalog-new/:name", app.newCatalogEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/event-edit/:name/:identifier", app.editEventEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/event-new/:name", app.newEventEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/catalog-post/:name/:identifier", app.postCatalogEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/catalog-post/:name", app.postCatalogEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/event-post/:name/:identifier", app.postEventEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/event-post/:name", app.postEventEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/catalog-view/:name", app.listCatalogEntities)
+	router.HandlerFunc(http.MethodGet, "/v1/event-view/:name", app.listEventEntities)
+
 	return app.enableCORS(router)
 }

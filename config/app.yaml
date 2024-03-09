@@ -5,3 +5,4 @@ deployer:
 metadata:
     adapter: json_file
     path: /../../../data/local/metadata/json/
+    tmplpath: /../../../data/local/metadata/tmpl/

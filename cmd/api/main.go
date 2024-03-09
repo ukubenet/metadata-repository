@@ -13,7 +13,7 @@ import (
 
 const version = "1.0.0"
 
-type config struct {
+type configBasic struct {
 	port int
 	env  string
 }
@@ -25,13 +25,13 @@ type AppStatus struct {
 }
 
 type application struct {
-	config config
-	logger *log.Logger
+	configBasic configBasic
+	logger      *log.Logger
 }
 
 func main() {
 	appConfig.LoadConfig("../../config", "app")
-	var cfg config
+	var cfg configBasic
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "dev", "Application environment (dev|prod)")
@@ -40,8 +40,8 @@ func main() {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	app := &application{
-		config: cfg,
-		logger: logger,
+		configBasic: cfg,
+		logger:      logger,
 	}
 
 	srv := &http.Server{
