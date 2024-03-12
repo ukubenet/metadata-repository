@@ -131,16 +131,16 @@ func (p *Adapter) List(list *[]string) (err error) {
 	return
 }
 
-func CreateFactory(e metadata.EntityType) *Factory {
+func CreateFactory(entityType metadata.EntityType) *Factory {
 	factory := NewFactory()
-	factory.Use(getAdapter(e))
+	factory.Use(getAdapter(entityType))
 
 	return factory
 }
 
-func ReadMetadata(name string, e metadata.EntityType) (*metadata.EntityMetadata, error) {
+func ReadMetadata(entityType metadata.EntityType, name string) (*metadata.EntityMetadata, error) {
 	entity := new(metadata.EntityMetadata)
-	dbReader := CreateFactory(e)
+	dbReader := CreateFactory(entityType)
 	adapter := dbReader.CreateAdapter()
 	err := adapter.Read(name, entity)
 
@@ -156,7 +156,7 @@ func ReadMetadataList(e metadata.EntityType) ([]string, error) {
 	return list, err
 }
 
-func PutMetadata(entitymeta *metadata.EntityMetadata, e metadata.EntityType) error {
+func PutMetadata(entityType metadata.EntityType, entitymeta *metadata.EntityMetadata) error {
 
 	if entitymeta.EntityName == "" {
 		return errors.New("entity name not defined")
@@ -165,16 +165,16 @@ func PutMetadata(entitymeta *metadata.EntityMetadata, e metadata.EntityType) err
 		return errors.New("etity attributes not defined")
 	}
 
-	factoryWriter := CreateFactory(e)
+	factoryWriter := CreateFactory(entityType)
 	adapter := factoryWriter.CreateAdapter()
 	err := adapter.Put(entitymeta)
 
 	return err
 }
 
-func DeleteMetadata(name string, e metadata.EntityType) error {
+func DeleteMetadata(entityType metadata.EntityType, name string) error {
 
-	storage := CreateFactory(e)
+	storage := CreateFactory(entityType)
 	adapter := storage.CreateAdapter()
 	err := adapter.Delete(name)
 

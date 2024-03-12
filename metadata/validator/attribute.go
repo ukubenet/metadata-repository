@@ -2,6 +2,7 @@ package metavalidator
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/ukubenet/metadata-repository/metadata"
 	metastorage "github.com/ukubenet/metadata-repository/metadata/storage"
@@ -54,11 +55,21 @@ func validateReference(name string, attribute metadata.Attribute) (err error) {
 		return fmt.Errorf("reference of attribute %q is not a string", name)
 	}
 
-	refEntity, err := metastorage.ReadMetadata(reference.(string), metadata.Catalog)
+	referenceTypeString, ok := attribute["referenceType"].(string)
+	if !ok {
+		return fmt.Errorf("attribute %q is reference, but reference type is not defined", name)
+	}
+
+	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(referenceTypeString)]
+	if !ok {
+		return fmt.Errorf("reference type %q is not definded (attribute %q)", referenceTypeString, name)
+	}
+
+	refEntity, err := metastorage.ReadMetadata(referenceType, reference.(string))
 	if err != nil {
 		return fmt.Errorf(
 			"error to read reference in attribute %q: %q",
-			attribute["name"],
+			name,
 			err,
 		)
 	}

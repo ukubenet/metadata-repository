@@ -83,8 +83,9 @@ func TestValidateReferenceWrongType(t *testing.T) {
 
 func TestValidateReferenceWrongReference(t *testing.T) {
 	attribute := metadata.Attribute{
-		"type":      "reference",
-		"reference": "test/Reference2",
+		"type":          "reference",
+		"reference":     "test/Reference2",
+		"referenceType": "Catalog",
 	}
 
 	err := validateReference("name", attribute)
@@ -98,9 +99,10 @@ func TestValidateReferenceWrongReference(t *testing.T) {
 
 func TestValidateReferenceViewIsNotSlice(t *testing.T) {
 	attribute := metadata.Attribute{
-		"type":      "reference",
-		"reference": "test/Reference",
-		"view":      "view",
+		"type":          "reference",
+		"reference":     "test/Reference",
+		"referenceType": "Catalog",
+		"view":          "view",
 	}
 
 	err := validateReference("name", attribute)
@@ -114,9 +116,10 @@ func TestValidateReferenceViewIsNotSlice(t *testing.T) {
 
 func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
 	attribute := metadata.Attribute{
-		"type":      "reference",
-		"reference": "test/Reference",
-		"view":      []interface{}{"view"},
+		"type":          "reference",
+		"reference":     "test/Reference",
+		"referenceType": "Catalog",
+		"view":          []interface{}{"view"},
 	}
 
 	err := validateReference("name", attribute)
@@ -128,11 +131,45 @@ func TestValidateReferenceViewUnmatchedAttributes(t *testing.T) {
 	}
 }
 
-func TestValidateReferenceViewSuccess(t *testing.T) {
+func TestValidateAttributeReferenceTypeNotString(t *testing.T) {
+	attribute := metadata.Attribute{
+		"type":          "reference",
+		"reference":     "test/Reference",
+		"referenceType": "WrongType",
+		"view":          []interface{}{"view"},
+	}
+
+	err := validateReference("name", attribute)
+	if !strings.Contains(
+		err.Error(),
+		"reference type \"WrongType\" is not definded (attribute \"name\")",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateAttributeReferenceTypeNotExist(t *testing.T) {
 	attribute := metadata.Attribute{
 		"type":      "reference",
 		"reference": "test/Reference",
-		"view":      []interface{}{"name"},
+		"view":      []interface{}{"view"},
+	}
+
+	err := validateReference("name", attribute)
+	if !strings.Contains(
+		err.Error(),
+		"attribute \"name\" is reference, but reference type is not defined",
+	) {
+		t.Fatal(err)
+	}
+}
+
+func TestValidateReferenceViewSuccess(t *testing.T) {
+	attribute := metadata.Attribute{
+		"type":          "reference",
+		"reference":     "test/Reference",
+		"referenceType": "Catalog",
+		"view":          []interface{}{"name"},
 	}
 
 	err := validateReference("name", attribute)

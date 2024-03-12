@@ -14,7 +14,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestDeployer(t *testing.T) {
-	entity, err := metaapi.ReadCatalogMetadata("test")
+	entity, err := metaapi.ReadMetadata(metadata.Catalog, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +29,7 @@ func TestDeployer(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	entity, err := metaapi.ReadCatalogMetadata("test")
+	entity, err := metaapi.ReadMetadata(metadata.Catalog, "test")
 	if err != nil {
 		t.Fatal(err)
 	}
