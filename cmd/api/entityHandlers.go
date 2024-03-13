@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -10,13 +11,20 @@ import (
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
-func (app *application) getOneCatalogEntity(rw http.ResponseWriter, r *http.Request) {
+func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
+	entityType := params.ByName("type")
 
-	entity, err := entityapi.ReadEntity(metadata.Catalog, name, identifier)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entity, err := entityapi.ReadEntity(entType, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -26,11 +34,18 @@ func (app *application) getOneCatalogEntity(rw http.ResponseWriter, r *http.Requ
 	parcel.Encode(http.StatusFound, entity)
 }
 
-func (app *application) getAllCatalogEntities(w http.ResponseWriter, r *http.Request) {
+func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
+	entityType := params.ByName("type")
 
-	list, err := entityapi.ReadEntities(metadata.Catalog, name)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	list, err := entityapi.ReadEntities(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -40,17 +55,30 @@ func (app *application) getAllCatalogEntities(w http.ResponseWriter, r *http.Req
 	parcel.Encode(http.StatusOK, list)
 }
 
-func (app *application) putCatalogEntity(rw http.ResponseWriter, r *http.Request) {
-	entity := new(entity.CatalogEntity)
+func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	entityType := params.ByName("type")
+
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+	e := entity.GetEntityInstance(entType)
 
 	parcel := getParcel(rw, r)
-	err := parcel.Decode(entity)
+	err := parcel.Decode(e)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	err = entityapi.PutEntity(entity)
+	eventEntity, ok := e.(entity.EventEntity)
+	if ok && eventEntity.EventTime.IsZero() {
+		eventEntity.EventTime = time.Now()
+	}
+
+	err = entityapi.PutEntity(e)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -59,12 +87,19 @@ func (app *application) putCatalogEntity(rw http.ResponseWriter, r *http.Request
 	rw.WriteHeader(http.StatusCreated)
 }
 
-func (app *application) deleteCatalogEntity(rw http.ResponseWriter, r *http.Request) {
+func (app *application) deleteEntity(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
+	entityType := params.ByName("type")
 
-	err := entityapi.DeleteEntity(metadata.Catalog, name, identifier)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	err := entityapi.DeleteEntity(entType, name, identifier)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -73,86 +108,17 @@ func (app *application) deleteCatalogEntity(rw http.ResponseWriter, r *http.Requ
 	rw.WriteHeader(http.StatusOK)
 }
 
-func (app *application) getAllCatalogEntityTypes(w http.ResponseWriter, r *http.Request) {
-	list, err := entityapi.ReadEntityTypes(metadata.Catalog)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	parcel := getParcel(w, r)
-	parcel.Encode(http.StatusOK, list)
-}
-
-func (app *application) getOneEventEntity(rw http.ResponseWriter, r *http.Request) {
+func (app *application) getAllEntityTypes(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+	entityType := params.ByName("type")
 
-	name := params.ByName("name")
-	identifier := params.ByName("identifier")
-
-	entity, err := entityapi.ReadEntity(metadata.Event, name, identifier)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
 		return
 	}
 
-	parcel := getParcel(rw, r)
-	parcel.Encode(http.StatusFound, entity)
-}
-
-func (app *application) getAllEventEntities(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-	name := params.ByName("name")
-
-	list, err := entityapi.ReadEntities(metadata.Event, name)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	parcel := getParcel(w, r)
-	parcel.Encode(http.StatusOK, list)
-}
-
-func (app *application) putEventEntity(rw http.ResponseWriter, r *http.Request) {
-	entity := new(entity.EventEntity)
-
-	parcel := getParcel(rw, r)
-	err := parcel.Decode(entity)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if entity.EventTime.IsZero() {
-		entity.EventTime = time.Now()
-	}
-
-	err = entityapi.PutEntity(entity)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	rw.WriteHeader(http.StatusCreated)
-}
-
-func (app *application) deleteEventEntity(rw http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-	name := params.ByName("name")
-	identifier := params.ByName("identifier")
-
-	err := entityapi.DeleteEntity(metadata.Event, name, identifier)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	rw.WriteHeader(http.StatusOK)
-}
-
-func (app *application) getAllEventEntityTypes(w http.ResponseWriter, r *http.Request) {
-	list, err := entityapi.ReadEntityTypes(metadata.Event)
+	list, err := entityapi.ReadEntityTypes(entType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

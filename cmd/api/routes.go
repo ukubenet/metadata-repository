@@ -18,17 +18,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/attribute-types", app.getAllAttributeTypes)
 
-	router.HandlerFunc(http.MethodGet, "/v1/catalog-entity/:name/:identifier", app.getOneCatalogEntity)
-	router.HandlerFunc(http.MethodGet, "/v1/catalog-list/:name", app.getAllCatalogEntities)
-	router.HandlerFunc(http.MethodPut, "/v1/catalog-entity/:name", app.putCatalogEntity)
-	router.HandlerFunc(http.MethodDelete, "/v1/catalog-entity/:name/:identifier", app.deleteCatalogEntity)
-	router.HandlerFunc(http.MethodGet, "/v1/catalogs", app.getAllCatalogEntityTypes)
-
-	router.HandlerFunc(http.MethodGet, "/v1/event-entity/:name/:identifier", app.getOneEventEntity)
-	router.HandlerFunc(http.MethodGet, "/v1/event-list/:name", app.getAllEventEntities)
-	router.HandlerFunc(http.MethodPut, "/v1/event-entity/:name", app.putEventEntity)
-	router.HandlerFunc(http.MethodDelete, "/v1/event-entity/:name/:identifier", app.deleteEventEntity)
-	router.HandlerFunc(http.MethodGet, "/v1/events", app.getAllEventEntityTypes)
+	router.HandlerFunc(http.MethodGet, "/v1/entity/:type/:name/:identifier", app.getOneEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/list/:type/:name", app.getAllEntities)
+	router.HandlerFunc(http.MethodPut, "/v1/entity/:type/:name", app.putEntity)
+	router.HandlerFunc(http.MethodDelete, "/v1/entity/:type/:name/:identifier", app.deleteEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/:type/", app.getAllEntityTypes)
 
 	return app.enableCORS(router)
 }

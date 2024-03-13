@@ -15,7 +15,13 @@ func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
-	entity, err := metaapi.ReadMetadata(metadata.EntityTypeMap[strings.ToLower(entityType)], name)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entity, err := metaapi.ReadMetadata(entType, name)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -29,7 +35,14 @@ func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 func (app *application) getMetadataList(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	entityType := params.ByName("type")
-	list, err := metaapi.ReadMetadataList(metadata.EntityTypeMap[strings.ToLower(entityType)])
+
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	list, err := metaapi.ReadMetadataList(entType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -49,13 +62,19 @@ func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
-	entity, err := metaapi.ReadMetadata(metadata.EntityTypeMap[strings.ToLower(entityType)], name)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entity, err := metaapi.ReadMetadata(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory(metadata.EntityTypeMap[strings.ToLower(entityType)])
+	deployerFactory := deployer.CreateFactory(entType)
 	adapter := deployerFactory.CreateAdapter()
 	err = adapter.Delete(entity)
 	if err != nil {
@@ -63,7 +82,7 @@ func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = metaapi.DeleteMetadata(metadata.EntityTypeMap[strings.ToLower(entityType)], name)
+	err = metaapi.DeleteMetadata(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -85,13 +104,19 @@ func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = metaapi.PutMetadata(metadata.EntityTypeMap[strings.ToLower(entityType)], entityMetadata)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.PutMetadata(entType, entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory(metadata.EntityTypeMap[strings.ToLower(entityType)])
+	deployerFactory := deployer.CreateFactory(entType)
 	adapter := deployerFactory.CreateAdapter()
 	err = adapter.Deploy(entityMetadata)
 	if err != nil {
