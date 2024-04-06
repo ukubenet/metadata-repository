@@ -52,7 +52,6 @@ func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference":     "Reference",
-			"referenceType": "catalog",
 			"view": map[string]any{
 				"missed": "value",
 			},
@@ -72,7 +71,6 @@ func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference":     "Reference",
-			"referenceType": "catalog",
 			"view": map[string]any{
 				"name": "value",
 			},
@@ -88,51 +86,12 @@ func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 	}
 }
 
-func TestValidateAttributeReferenceTypeNotString(t *testing.T) {
-	values := map[string]any{
-		"sample": map[string]any{
-			"reference":     "Reference",
-			"referenceType": 0,
-			"view": map[string]any{
-				"name": "string",
-			},
-		},
-	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
-	if !strings.Contains(
-		err.Error(),
-		"reference of attribute \"sample\" does not exist or not a string",
-	) {
-		t.Fatal(err)
-	}
-}
-
-func TestValidateAttributeReferenceTypeNotExist(t *testing.T) {
-	values := map[string]any{
-		"sample": map[string]any{
-			"reference":     "Reference",
-			"referenceType": "incorrect",
-			"view": map[string]any{
-				"name": "string",
-			},
-		},
-	}
-
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
-	if !strings.Contains(
-		err.Error(),
-		"reference type \"incorrect\" of attribute \"sample\" does not exist",
-	) {
-		t.Fatal(err)
-	}
-}
 
 func TestValidateAttributeReferenceSuccess(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
 			"reference":     "Reference",
-			"referenceType": "Catalog",
 			"view": map[string]any{
 				"name": "string",
 			},

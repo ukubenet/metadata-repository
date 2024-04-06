@@ -76,19 +76,19 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 		return fmt.Errorf("reference of attribute %q does not exist or not a string", name)
 	}
 
-	referenceTypeString, ok := referenceMap["referenceType"].(string)
+	view, ok := referenceMap["view"]
 	if !ok {
-		return fmt.Errorf("reference of attribute %q does not exist or not a string", name)
+		return fmt.Errorf("view of reference attribute %q is not present", name)
+	}
+
+	referenceTypeString, ok := meta["referenceType"].(string)
+	if !ok {
+		return fmt.Errorf("reference type of attribute %q does not exist or not a string (not define in metadata)", name)
 	}
 
 	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(referenceTypeString)]
 	if !ok {
-		return fmt.Errorf("reference type %q of attribute %q does not exist", referenceTypeString, name)
-	}
-
-	view, ok := referenceMap["view"]
-	if !ok {
-		return fmt.Errorf("view of reference attribute %q is not present", name)
+		return fmt.Errorf("reference type %q of attribute %q does not exist (not define in metadata)", referenceTypeString, name)
 	}
 
 	if _, ok := view.(map[string]any); !ok {

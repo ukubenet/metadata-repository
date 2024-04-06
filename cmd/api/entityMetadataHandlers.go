@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/deployer"
@@ -9,11 +10,18 @@ import (
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
-func (app *application) getCatalogMetadata(rw http.ResponseWriter, r *http.Request) {
+func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
+	entityType := params.ByName("type")
 
-	entity, err := metaapi.ReadCatalogMetadata(name)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entity, err := metaapi.ReadMetadata(entType, name)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
@@ -24,8 +32,17 @@ func (app *application) getCatalogMetadata(rw http.ResponseWriter, r *http.Reque
 
 }
 
-func (app *application) getCatalogMetadataList(w http.ResponseWriter, r *http.Request) {
-	list, err := metaapi.ReadCatalogMetadataList()
+func (app *application) getMetadataList(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	entityType := params.ByName("type")
+
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	list, err := metaapi.ReadMetadataList(entType)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -40,17 +57,24 @@ func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Requ
 	parcel.Encode(http.StatusOK, metadata.AttributeTypeList)
 }
 
-func (app *application) deleteCatalogMetadata(w http.ResponseWriter, r *http.Request) {
+func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 	name := params.ByName("name")
+	entityType := params.ByName("type")
 
-	entity, err := metaapi.ReadCatalogMetadata(name)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entity, err := metaapi.ReadMetadata(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory(metadata.Catalog)
+	deployerFactory := deployer.CreateFactory(entType)
 	adapter := deployerFactory.CreateAdapter()
 	err = adapter.Delete(entity)
 	if err != nil {
@@ -58,7 +82,7 @@ func (app *application) deleteCatalogMetadata(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	err = metaapi.DeleteCatalogMetadata(name)
+	err = metaapi.DeleteMetadata(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -67,7 +91,10 @@ func (app *application) deleteCatalogMetadata(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusOK)
 }
 
-func (app *application) putCatalogMetadata(rw http.ResponseWriter, r *http.Request) {
+func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	entityType := params.ByName("type")
+
 	entityMetadata := new(metadata.EntityMetadata)
 
 	parcel := getParcel(rw, r)
@@ -77,93 +104,19 @@ func (app *application) putCatalogMetadata(rw http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = metaapi.PutCatalogMetadata(entityMetadata)
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	err = metaapi.PutMetadata(entType, entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	deployerFactory := deployer.CreateFactory(metadata.Catalog)
-	adapter := deployerFactory.CreateAdapter()
-	err = adapter.Deploy(entityMetadata)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	rw.WriteHeader(http.StatusCreated)
-}
-
-func (app *application) getEventMetadata(rw http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-	name := params.ByName("name")
-
-	entity, err := metaapi.ReadEventMetadata(name)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	parcel := getParcel(rw, r)
-	parcel.Encode(http.StatusFound, entity)
-
-}
-
-func (app *application) getEventMetadataList(w http.ResponseWriter, r *http.Request) {
-	list, err := metaapi.ReadEventMetadataList()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	parcel := getParcel(w, r)
-	parcel.Encode(http.StatusOK, list)
-}
-
-func (app *application) deleteEventMetadata(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-	name := params.ByName("name")
-
-	entity, err := metaapi.ReadEventMetadata(name)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	deployerFactory := deployer.CreateFactory(metadata.Event)
-	adapter := deployerFactory.CreateAdapter()
-	err = adapter.Delete(entity)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = metaapi.DeleteEventMetadata(name)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-func (app *application) putEventMetadata(rw http.ResponseWriter, r *http.Request) {
-	entityMetadata := new(metadata.EntityMetadata)
-
-	parcel := getParcel(rw, r)
-	err := parcel.Decode(entityMetadata)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = metaapi.PutEventMetadata(entityMetadata)
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	deployerFactory := deployer.CreateFactory(metadata.Event)
+	deployerFactory := deployer.CreateFactory(entType)
 	adapter := deployerFactory.CreateAdapter()
 	err = adapter.Deploy(entityMetadata)
 	if err != nil {

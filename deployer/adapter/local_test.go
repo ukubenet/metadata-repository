@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	config "github.com/ukubenet/metadata-repository/config"
+	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
@@ -20,7 +21,7 @@ func TestMain(m *testing.M) {
 func TestLocalDeployer(t *testing.T) {
 	deployer := Local(path)
 
-	entity, _ := metaapi.ReadCatalogMetadata("test")
+	entity, _ := metaapi.ReadMetadata(metadata.Catalog, "test")
 
 	err := deployer.Deploy(entity)
 	if err != nil {
