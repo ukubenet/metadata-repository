@@ -30,6 +30,7 @@ type CatalogEntity struct {
 
 type AttributeValues map[string]any
 
+
 func (e EventEntity) GetID() string {
 	return e.Identifier
 }

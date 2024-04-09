@@ -37,9 +37,9 @@ var AttributeTypeList = []string{
 }
 
 type EntityMetadata struct {
-	EntityName     string     `json:"entityName"`
-	SearchCriteria [][]string `json:"search"`
-	Attributes     Attributes `json:"attributes"`
+	EntityName     string           `json:"entityName"`
+	SearchCriteria map[string]Index `json:"search"`
+	Attributes     Attributes       `json:"attributes"`
 }
 
 type Attributes map[string]Attribute
