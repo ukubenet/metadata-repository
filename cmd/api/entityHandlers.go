@@ -8,6 +8,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
+	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
@@ -32,6 +33,41 @@ func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 
 	parcel := getParcel(rw, r)
 	parcel.Encode(http.StatusFound, entity)
+}
+
+func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	entityName := params.ByName("entity")
+	entityType := params.ByName("type")
+	indexName := params.ByName("index")
+
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	criteria := make(indexItem.ValueMap)
+
+	parcel := getParcel(w, r)
+	err := parcel.Decode(&criteria)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(criteria) == 0 {
+		http.Error(w, "Criteria not defined", http.StatusBadRequest)
+		return
+	}
+
+	list, err := entityapi.SearchEntities(entType, entityName, indexName, criteria)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	parcel.Encode(http.StatusOK, list)
 }
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {

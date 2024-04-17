@@ -169,3 +169,21 @@ func ReadEntity(entityType metadata.EntityType, name string, identifier string) 
 
 	return entity, err
 }
+
+func ReadEntities(entityType metadata.EntityType, name string) ([]entity.Entity, error) {
+	storage := CreateFactory()
+	adapter := storage.CreateAdapter()
+
+	list, err := adapter.List(entityType, name)
+
+	return list, err
+}
+
+func ReadEntityTypeList(entityType metadata.EntityType) (list []string, err error) {
+	storage := CreateFactory()
+	adapter := storage.CreateAdapter()
+
+	list, err = adapter.TypeList(entityType)
+
+	return list, err
+}

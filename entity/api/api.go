@@ -4,18 +4,15 @@ import (
 	"errors"
 
 	"github.com/ukubenet/metadata-repository/entity"
+	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
+	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
 	storage "github.com/ukubenet/metadata-repository/entity/storage"
 	entityvalidator "github.com/ukubenet/metadata-repository/entity/validator"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func ReadEntity(entityType metadata.EntityType, name string, identifier string) (entity.Entity, error) {
-	entity, err := storage.ReadEntity(entityType, name, identifier)
-	if err != nil {
-		return entity, err
-	}
-
-	return entity, err
+	return storage.ReadEntity(entityType, name, identifier)
 }
 
 func PutEntity(entity entity.Entity) error {
@@ -49,10 +46,13 @@ func DeleteEntity(entityType metadata.EntityType, name string, identifier string
 }
 
 func ReadEntities(entityType metadata.EntityType, name string) ([]entity.Entity, error) {
-	storage := storage.CreateFactory()
-	adapter := storage.CreateAdapter()
+	return storage.ReadEntities(entityType, name)
+}
 
-	list, err := adapter.List(entityType, name)
+func SearchEntities(entityType metadata.EntityType, name string, index string, criteria any) ([]indexItem.Key, error) {
+	indexTree := entitysearch.Indexes[entityType][name][index]
+
+	list, err := indexTree.Searcher.Search(criteria)
 
 	return list, err
 }
