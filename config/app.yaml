@@ -1,7 +1,7 @@
 deployer:
     adapter: json_file
-    path: /../../../data/local/entity/json/
+    path: /../../../data/fridge/local/entity/json/
 
 metadata:
     adapter: json_file
-    path: /../../../data/local/metadata/json/
+    path: /../../../data/fridge/local/metadata/json/
