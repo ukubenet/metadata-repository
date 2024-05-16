@@ -25,5 +25,11 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/v1/entity/:type/:name/:identifier", app.deleteEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/types/:type/", app.getAllEntityTypes)
 
+	router.HandlerFunc(http.MethodGet, "/v1/edit/:type/:name/:identifier", app.editEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/new/:type/:name", app.newEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/post/:type/:name/:identifier", app.postEntity)
+	router.HandlerFunc(http.MethodPost, "/v1/post/:type/:name", app.postEntity)
+	router.HandlerFunc(http.MethodGet, "/v1/list-view/:type/:name", app.listEntities)
+
 	return app.enableCORS(router)
 }

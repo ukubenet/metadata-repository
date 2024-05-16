@@ -51,7 +51,7 @@ func TestValidateAttributeReferenceMalformed(t *testing.T) {
 func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
-			"reference":     "Reference",
+			"reference": "Reference",
 			"view": map[string]any{
 				"missed": "value",
 			},
@@ -70,7 +70,7 @@ func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
-			"reference":     "Reference",
+			"reference": "Reference",
 			"view": map[string]any{
 				"name": "value",
 			},
@@ -86,12 +86,10 @@ func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 	}
 }
 
-
-
 func TestValidateAttributeReferenceSuccess(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
-			"reference":     "Reference",
+			"reference": "Reference",
 			"view": map[string]any{
 				"name": "string",
 			},
@@ -107,8 +105,7 @@ func TestValidateAttributeReferenceSuccess(t *testing.T) {
 func TestValidateAttributeReferenceReadError(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
-			"reference":     "No Reference",
-			"referenceType": "catalog",
+			"reference": "No Reference",
 			"view": map[string]any{
 				"missed": "value",
 			},
@@ -127,9 +124,8 @@ func TestValidateAttributeReferenceReadError(t *testing.T) {
 func TestValidateReferenceAttributeViewNotMap(t *testing.T) {
 	values := map[string]any{
 		"sample": map[string]any{
-			"reference":     "No Reference",
-			"referenceType": "catalog",
-			"view":          "not a map",
+			"reference": "No Reference",
+			"view":      "not a map",
 		},
 	}
 

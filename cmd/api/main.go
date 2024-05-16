@@ -8,13 +8,13 @@ import (
 	"os"
 	"time"
 
-	appConfig "github.com/ukubenet/metadata-repository/config"
+	config "github.com/ukubenet/metadata-repository/config"
 	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
 )
 
 const version = "1.0.0"
 
-type config struct {
+type appConfig struct {
 	port int
 	env  string
 }
@@ -26,13 +26,13 @@ type AppStatus struct {
 }
 
 type application struct {
-	config config
-	logger *log.Logger
+	appConfig appConfig
+	logger    *log.Logger
 }
 
 func main() {
-	appConfig.LoadConfig("../../config", "app")
-	var cfg config
+	config.LoadConfig("../../config", "app")
+	var cfg appConfig
 
 	flag.IntVar(&cfg.port, "port", 4000, "Server port to listen on")
 	flag.StringVar(&cfg.env, "env", "dev", "Application environment (dev|prod)")
@@ -41,8 +41,8 @@ func main() {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 	app := &application{
-		config: cfg,
-		logger: logger,
+		appConfig: cfg,
+		logger:    logger,
 	}
 
 	entitysearch.Indexes.LoadAllIndexes()
