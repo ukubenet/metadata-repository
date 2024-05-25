@@ -80,6 +80,39 @@ func createReferencesMap(meta *metadata.EntityMetadata) (map[string]map[string]m
 	return references, nil
 }
 
+func getAttributesFromForm(r *http.Request, meta *metadata.EntityMetadata) (entity.AttributeValues, error) {
+	AttributesValues := make(entity.AttributeValues)
+	for key := range r.Form {
+		if meta.Attributes[key]["type"] == "reference" {
+			viewFields := meta.Attributes[key]["view"]
+			refType := meta.Attributes[key]["referenceType"].(string)
+			referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
+			if !ok {
+				return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", meta.Attributes[key]["reference"].(string), refType)
+			}
+
+			refEntity, err := entityapi.ReadEntity(referenceType, meta.Attributes[key]["reference"].(string), r.FormValue(key))
+			if err != nil {
+				return nil, err
+			}
+			view := make(map[string]interface{})
+			for _, viewFieldName := range viewFields.([]interface{}) {
+				view[viewFieldName.(string)] = refEntity.GetAttributes()[viewFieldName.(string)]
+			}
+
+			AttributesValues[key] = map[string]any{
+				"reference": r.FormValue(key),
+				"type":      "reference",
+				"view":      view,
+			}
+		} else {
+			AttributesValues[key] = r.FormValue(key)
+		}
+	}
+
+	return AttributesValues, nil
+}
+
 func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -92,7 +125,7 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	e, err := entityapi.ReadEntity(metadata.Catalog, name, identifier)
+	e, err := entityapi.ReadEntity(entType, name, identifier)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -111,11 +144,12 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmplData := struct {
+		EntityType string
 		Entity     entity.Entity
 		References map[string]map[string]map[string]string
-	}{e, references}
+	}{entityType, e, references}
 
-	executeTemplate(w, entityType+"_edit", tmplData)
+	executeTemplate(w, "edit", tmplData)
 }
 
 func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
@@ -141,14 +175,16 @@ func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmplData := struct {
+		EntityType string
 		Meta       *metadata.EntityMetadata
 		References map[string]map[string]map[string]string
 	}{
+		entityType,
 		meta,
 		references,
 	}
 
-	executeTemplate(w, entityType+"_new", tmplData)
+	executeTemplate(w, "new", tmplData)
 }
 
 func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
@@ -174,15 +210,17 @@ func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmplData := struct {
+		EntityType string
 		EntityName string
 		Meta       *metadata.EntityMetadata
 		List       []entity.Entity
 	}{
+		entityType,
 		name,
 		meta,
 		list,
 	}
-	executeTemplate(w, entityType+"_list", tmplData)
+	executeTemplate(w, "list", tmplData)
 }
 
 func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
@@ -203,60 +241,55 @@ func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
 		r.Form.Del("Identifier")
 	}
 
-	e := entity.GetEntityInstance(entType)
-	e.SetName(name)
-	e.SetID(identifier)
-
 	meta, err := metaapi.ReadMetadata(entType, name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	if e.GetType() == metadata.Event {
+	if entType == metadata.Event {
+		eventEntity := new(entity.EventEntity)
+
 		value := r.FormValue("EventTime")
 		EventTime, err := time.Parse(time.RFC3339, value+":00Z")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		eventEntity, ok := e.(entity.EventEntity)
-		if ok && eventEntity.EventTime.IsZero() {
-			eventEntity.EventTime = EventTime
-		}
+		eventEntity.EventTime = EventTime
 		r.Form.Del("EventTime")
-	}
 
-	AttributesValues := make(entity.AttributeValues)
-	for key := range r.Form {
-		if meta.Attributes[key]["type"] == "reference" {
-			viewFields := meta.Attributes[key]["view"]
-			refEntity, err := entityapi.ReadEntity(entType, meta.Attributes[key]["reference"].(string), r.FormValue(key))
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			view := make(map[string]interface{})
-			for _, viewFieldName := range viewFields.([]interface{}) {
-				view[viewFieldName.(string)] = refEntity.GetAttributes()[viewFieldName.(string)]
-			}
-
-			AttributesValues[key] = map[string]any{
-				"reference": r.FormValue(key),
-				"type":      "reference",
-				"view":      view,
-			}
-		} else {
-			AttributesValues[key] = r.FormValue(key)
+		eventEntity.EntityName = name
+		eventEntity.Identifier = identifier
+		attributes, err := getAttributesFromForm(r, meta)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
-	}
-	e.SetAttributes(AttributesValues)
+		eventEntity.Attributes = attributes
 
-	err = entityapi.PutEntity(e)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		err = entityapi.PutEntity(eventEntity)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+	} else {
+		entityCatalog := new(entity.CatalogEntity)
+
+		entityCatalog.EntityName = name
+		entityCatalog.Identifier = identifier
+		attributes, err := getAttributesFromForm(r, meta)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		entityCatalog.Attributes = attributes
+
+		err = entityapi.PutEntity(entityCatalog)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
 
 	http.Redirect(w, r, "/v1/list-view/"+entityType+"/"+name, http.StatusSeeOther)
