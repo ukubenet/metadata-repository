@@ -19,22 +19,22 @@ func TestReader(t *testing.T) {
 
 	reader := CreateFactory()
 	adapter := reader.CreateAdapter()
-	entity, err := adapter.Read(metadata.Catalog, name, identifier)
+	e, err := adapter.Read(metadata.Catalog, name, identifier)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if entity.GetName() != name {
-		t.Fatal("Name", entity.GetName())
+	if e.EntityName != name {
+		t.Fatal("Name", e.EntityName)
 	}
 
-	if entity.GetID() != identifier {
-		t.Fatal("Identifier", entity.GetName())
+	if e.Identifier != identifier {
+		t.Fatal("Identifier", e.Identifier)
 	}
 
-	if len(entity.GetAttributes()) != 2 {
-		t.Fatal("Attributes", entity.GetAttributes())
+	if len(e.Attributes) != 2 {
+		t.Fatal("Attributes", e.Attributes)
 	}
 }
 
@@ -49,22 +49,22 @@ func TestReplacer(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = adapter.Put(entity)
+	err = adapter.Put(metadata.Catalog, entity)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if entity.GetName() != name {
-		t.Fatal("Name", entity.GetName())
+	if entity.EntityName != name {
+		t.Fatal("Name", entity.EntityName)
 	}
 
-	if entity.GetID() != identifier {
-		t.Fatal("Identifier", entity.GetID())
+	if entity.Identifier != identifier {
+		t.Fatal("Identifier", entity.Identifier)
 	}
 
-	if len(entity.GetAttributes()) != 2 {
-		t.Fatal("Attributes", entity.GetAttributes())
+	if len(entity.Attributes) != 2 {
+		t.Fatal("Attributes", entity.Attributes)
 	}
 }
 
@@ -72,18 +72,16 @@ func TestEraser(t *testing.T) {
 	name := "test"
 	identifier := "EntityToDelete"
 
-	var entity = entity.CatalogEntity{
-		Metadata: entity.Metadata{
-			EntityName: name,
-			Identifier: identifier,
-		},
+	var entity = &entity.Entity{
+		EntityName: name,
+		Identifier: identifier,
 	}
 
 	factory := CreateFactory()
 	adapter := factory.CreateAdapter()
 	entity.EntityName = name
 	entity.Identifier = identifier
-	adapter.Put(entity)
+	adapter.Put(metadata.Catalog, entity)
 
 	_, err := adapter.Read(metadata.Catalog, name, identifier)
 	if err != nil {
@@ -108,7 +106,7 @@ func TestLister(t *testing.T) {
 		t.Fatal("List quantity", len(list))
 	}
 
-	if list[0].GetID() != "Test" {
-		t.Fatal("List[0].Identifier is ", list[0].GetID())
+	if list[0].Identifier != "Test" {
+		t.Fatal("List[0].Identifier is ", list[0].Identifier)
 	}
 }

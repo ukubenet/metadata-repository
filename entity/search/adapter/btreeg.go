@@ -21,11 +21,16 @@ func byKeys(a, b indexItem.IndexItem) bool {
 // when a is less than b.
 func byVals(a, b indexItem.IndexItem) bool {
 	for index := range a.Values {
-		if a.Values[index].(string) < b.Values[index].(string) {
-			return true
-		}
-		if a.Values[index].(string) > b.Values[index].(string) {
-			return false
+		_, ok := a.Values[index].(string)
+		if ok {
+			if a.Values[index].(string) < b.Values[index].(string) {
+				return true
+			}
+			if a.Values[index].(string) > b.Values[index].(string) {
+				return false
+			}
+		} else {
+			panic("not implemented")
 		}
 	}
 

@@ -20,38 +20,32 @@ func TestLoadIndex(t *testing.T) {
 
 	var entities []entity.Entity
 
-	e := entity.CatalogEntity{
-		Metadata: entity.Metadata{
-			EntityName: "User",
-			Identifier: "1",
-			Attributes: entity.AttributeValues{
-				"name":  "User 1",
-				"email": "email@gmail.com",
-			},
+	e := entity.Entity{
+		EntityName: "User",
+		Identifier: "1",
+		Attributes: entity.AttributeValues{
+			"name":  "User 1",
+			"email": "email@gmail.com",
 		},
 	}
 	entities = append(entities, e)
 
-	e = entity.CatalogEntity{
-		Metadata: entity.Metadata{
-			EntityName: "User",
-			Identifier: "2",
-			Attributes: entity.AttributeValues{
-				"name":  "User",
-				"email": "email2@gmail.com",
-			},
+	e = entity.Entity{
+		EntityName: "User",
+		Identifier: "2",
+		Attributes: entity.AttributeValues{
+			"name":  "User",
+			"email": "email2@gmail.com",
 		},
 	}
 	entities = append(entities, e)
 
-	e = entity.CatalogEntity{
-		Metadata: entity.Metadata{
-			EntityName: "User",
-			Identifier: "3",
-			Attributes: entity.AttributeValues{
-				"name":  "User",
-				"email": "email3@gmail.com",
-			},
+	e = entity.Entity{
+		EntityName: "User",
+		Identifier: "3",
+		Attributes: entity.AttributeValues{
+			"name":  "User",
+			"email": "email3@gmail.com",
 		},
 	}
 	entities = append(entities, e)

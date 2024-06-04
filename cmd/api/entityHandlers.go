@@ -100,7 +100,7 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
 		return
 	}
-	e := entity.GetEntityInstance(entType)
+	e := new(entity.Entity)
 
 	parcel := getParcel(rw, r)
 	err := parcel.Decode(e)
@@ -109,12 +109,12 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventEntity, ok := e.(entity.EventEntity)
-	if ok && eventEntity.EventTime.IsZero() {
-		eventEntity.EventTime = time.Now()
+	eventTime, ok := e.Attributes["EventTime"].(time.Time)
+	if !ok || eventTime.IsZero() {
+		e.Attributes["EventTime"] = time.Now()
 	}
 
-	err = entityapi.PutEntity(e)
+	err = entityapi.PutEntity(entType, e)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return

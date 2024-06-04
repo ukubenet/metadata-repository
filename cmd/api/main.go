@@ -31,6 +31,8 @@ type application struct {
 }
 
 func main() {
+	os.Setenv("OPENAI_API_KEY", "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")
+	os.Setenv("OPENAI_MODEL", "gpt-3.5-turbo")
 	config.LoadConfig("../../config", "app")
 	var cfg appConfig
 

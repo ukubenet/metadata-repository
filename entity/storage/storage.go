@@ -9,12 +9,12 @@ import (
 type (
 	// Reader implementations should decode values from a storage repository to a candidate
 	EntityReader interface {
-		Read(entityType metadata.EntityType, entityName string, identifier string) (e entity.Entity, err error)
+		Read(entityType metadata.EntityType, entityName string, identifier string) (e *entity.Entity, err error)
 	}
 
 	// Replacer implementation should encode values from a candidate to a storage repository.
 	EntityReplacer interface {
-		Put(candidate entity.Entity) error
+		Put(entityType metadata.EntityType, candidate *entity.Entity) error
 	}
 
 	// Delete implementations should delete entity
@@ -109,14 +109,14 @@ func (f *EntityFactory) CreateAdapter() *Adapter {
 // Adapter
 
 // Adapter replace
-func (a *Adapter) Put(c entity.Entity) error {
+func (a *Adapter) Put(entityType metadata.EntityType, c *entity.Entity) error {
 	inserter := a.factory.replacer
 
-	return inserter.Put(c)
+	return inserter.Put(entityType, c)
 }
 
 // Adapter reader
-func (p *Adapter) Read(entityType metadata.EntityType, name string, identifier string) (e entity.Entity, err error) {
+func (p *Adapter) Read(entityType metadata.EntityType, name string, identifier string) (e *entity.Entity, err error) {
 	reader := p.factory.reader
 	if e, err = reader.Read(entityType, name, identifier); err != nil {
 		return
@@ -162,7 +162,7 @@ func CreateFactory() *EntityFactory {
 	return factory
 }
 
-func ReadEntity(entityType metadata.EntityType, name string, identifier string) (entity entity.Entity, err error) {
+func ReadEntity(entityType metadata.EntityType, name string, identifier string) (entity *entity.Entity, err error) {
 	dbReader := CreateFactory()
 	adapter := dbReader.CreateAdapter()
 	entity, err = adapter.Read(entityType, name, identifier)
