@@ -40,7 +40,7 @@ func JSONIndent(amt int) *JSONCodec {
 }
 
 // Read entity from a json file
-func (jc *JSONCodec) Read(entityType metadata.EntityType, entityName string, identifier string) (e entity.Entity, err error) {
+func (jc *JSONCodec) Read(entityType metadata.EntityType, entityName string, identifier string) (e *entity.Entity, err error) {
 
 	file, err := os.Open(jc.path + entityType.String() + "/" + entityName + "/" + identifier + Ext)
 	if err != nil {
@@ -55,14 +55,14 @@ func (jc *JSONCodec) Read(entityType metadata.EntityType, entityName string, ide
 	}()
 
 	jsonParser := json.NewDecoder(file)
-	e = entity.GetEntityInstance(entityType)
+	e = new(entity.Entity)
 	jsonParser.Decode(e)
 
 	return e, nil
 }
 
 // Save the entity to JSON file
-func (jc *JSONCodec) Put(e entity.Entity) (err error) {
+func (jc *JSONCodec) Put(entityType metadata.EntityType, e *entity.Entity) (err error) {
 	var output []byte
 
 	if jc.indent != "" {
@@ -75,7 +75,7 @@ func (jc *JSONCodec) Put(e entity.Entity) (err error) {
 		return
 	}
 
-	os.WriteFile(jc.path+e.GetType().String()+"/"+e.GetName()+"/"+e.GetID()+Ext, output, 0644)
+	os.WriteFile(jc.path+entityType.String()+"/"+e.EntityName+"/"+e.Identifier+Ext, output, 0644)
 
 	return
 }
@@ -104,7 +104,7 @@ func warkpath(jc *JSONCodec, entityType metadata.EntityType, entityName string, 
 	if filepath.Ext(filename) == ext {
 		var identifier = filename[0 : len(filename)-len(ext)]
 		var e, _ = jc.Read(entityType, entityName, identifier)
-		*list = append(*list, e)
+		*list = append(*list, *e)
 	}
 
 	return nil

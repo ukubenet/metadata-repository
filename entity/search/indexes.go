@@ -48,7 +48,7 @@ func LoadIndex(list []entity.Entity, indexMeta metadata.Index) *EntityIndex {
 	setter := indexer.Setter
 
 	for _, entity := range list {
-		if entity.GetAttributes() == nil {
+		if entity.Attributes == nil {
 			continue
 		}
 		item := GetIndexItem(indexMeta, entity)
@@ -60,13 +60,25 @@ func LoadIndex(list []entity.Entity, indexMeta metadata.Index) *EntityIndex {
 
 func GetIndexItem(indexMeta metadata.Index, entity entity.Entity) indexItem.IndexItem {
 	values := GetIndexItemValues(indexMeta, entity)
-	return indexItem.IndexItem{Key: indexItem.Key(entity.GetID()), Values: values}
+	return indexItem.IndexItem{Key: indexItem.Key(entity.Identifier), Values: values}
 }
 
 func GetIndexItemValues(indexMeta metadata.Index, entity entity.Entity) indexItem.ValueMap {
 	values := make(indexItem.ValueMap)
 	for _, attrName := range indexMeta.Attributes {
-		values[attrName] = entity.GetAttributes()[attrName]
+		attribute := entity.Attributes[attrName]
+		/* todo check if other types (int, float, time) are supported */
+		if _, ok := attribute.(string); ok {
+			values[attrName] = entity.Attributes[attrName]
+		} else if refAttribute, ok := attribute.(map[string]any); ok {
+			if refAttribute["type"] == "reference" {
+				if view, ok := refAttribute["view"].(map[string]any); ok {
+					for name, value := range view {
+						values[attrName+"."+name] = value
+					}
+				}
+			}
+		}
 	}
 
 	return values

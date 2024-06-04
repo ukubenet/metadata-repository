@@ -7,9 +7,9 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ukubenet/metadata-repository/chatgpt"
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
@@ -63,10 +63,10 @@ func createReferencesMap(meta *metadata.EntityMetadata) (map[string]map[string]m
 
 		refEntityMap := make(map[string]map[string]string)
 		for _, refEntity := range refEntities {
-			refIdentifier := refEntity.GetID()
+			refIdentifier := refEntity.Identifier
 			refViewMap := make(map[string]string)
 			for _, refViewName := range metaAttribute["view"].([]interface{}) {
-				refViewValue, ok := refEntity.GetAttributes()[refViewName.(string)].(string)
+				refViewValue, ok := refEntity.Attributes[refViewName.(string)].(string)
 				if ok {
 					refViewMap[refViewName.(string)] = refViewValue
 				}
@@ -84,27 +84,11 @@ func getAttributesFromForm(r *http.Request, meta *metadata.EntityMetadata) (enti
 	AttributesValues := make(entity.AttributeValues)
 	for key := range r.Form {
 		if meta.Attributes[key]["type"] == "reference" {
-			viewFields := meta.Attributes[key]["view"]
-			refType := meta.Attributes[key]["referenceType"].(string)
-			referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
-			if !ok {
-				return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", meta.Attributes[key]["reference"].(string), refType)
-			}
-
-			refEntity, err := entityapi.ReadEntity(referenceType, meta.Attributes[key]["reference"].(string), r.FormValue(key))
+			refValue, err := entityapi.GenerateReferenceAttributeValue(meta, key, r.FormValue(key))
 			if err != nil {
 				return nil, err
 			}
-			view := make(map[string]interface{})
-			for _, viewFieldName := range viewFields.([]interface{}) {
-				view[viewFieldName.(string)] = refEntity.GetAttributes()[viewFieldName.(string)]
-			}
-
-			AttributesValues[key] = map[string]any{
-				"reference": r.FormValue(key),
-				"type":      "reference",
-				"view":      view,
-			}
+			AttributesValues[key] = refValue
 		} else {
 			AttributesValues[key] = r.FormValue(key)
 		}
@@ -147,7 +131,7 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 		EntityType string
 		Entity     entity.Entity
 		References map[string]map[string]map[string]string
-	}{entityType, e, references}
+	}{entityType, *e, references}
 
 	executeTemplate(w, "edit", tmplData)
 }
@@ -247,49 +231,42 @@ func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if entType == metadata.Event {
-		eventEntity := new(entity.EventEntity)
+	entity := new(entity.Entity)
 
-		value := r.FormValue("EventTime")
-		EventTime, err := time.Parse(time.RFC3339, value+":00Z")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		eventEntity.EventTime = EventTime
-		r.Form.Del("EventTime")
+	entity.EntityName = name
+	entity.Identifier = identifier
+	attributes, err := getAttributesFromForm(r, meta)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	entity.Attributes = attributes
 
-		eventEntity.EntityName = name
-		eventEntity.Identifier = identifier
-		attributes, err := getAttributesFromForm(r, meta)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		eventEntity.Attributes = attributes
+	err = entityapi.PutEntity(entType, entity)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-		err = entityapi.PutEntity(eventEntity)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-	} else {
-		entityCatalog := new(entity.CatalogEntity)
+	http.Redirect(w, r, "/v1/list-view/"+entityType+"/"+name, http.StatusSeeOther)
+}
 
-		entityCatalog.EntityName = name
-		entityCatalog.Identifier = identifier
-		attributes, err := getAttributesFromForm(r, meta)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		entityCatalog.Attributes = attributes
+func (app *application) postChatGPT(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
 
-		err = entityapi.PutEntity(entityCatalog)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	name := params.ByName("name")
+	entityType := params.ByName("type")
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(w, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	r.ParseForm()
+	err := chatgpt.SaveNewEntity(entType, name, r.FormValue("ChatGPT"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	http.Redirect(w, r, "/v1/list-view/"+entityType+"/"+name, http.StatusSeeOther)

@@ -3,7 +3,6 @@ package adapter
 import (
 	"os"
 	"testing"
-	"time"
 
 	"github.com/ukubenet/metadata-repository/entity"
 	"github.com/ukubenet/metadata-repository/metadata"
@@ -25,15 +24,15 @@ func TestJsonCatalogReader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if entity.GetName() != "test" {
+	if entity.EntityName != "test" {
 		t.Fail()
 	}
 
-	if entity.GetID() != "Test" {
+	if entity.Identifier != "Test" {
 		t.Fail()
 	}
 
-	if entity.GetAttributes() == nil {
+	if entity.Attributes == nil {
 		t.Fail()
 	}
 }
@@ -45,15 +44,13 @@ func TestJsonCatalogReplacer(t *testing.T) {
 		"number_attribute": 100,
 	}
 
-	var candidate = entity.CatalogEntity{
-		Metadata: entity.Metadata{
-			EntityName: "test",
-			Attributes: attributes,
-			Identifier: "Test",
-		},
+	var candidate = &entity.Entity{
+		EntityName: "test",
+		Attributes: attributes,
+		Identifier: "Test",
 	}
 
-	inserter.Put(candidate)
+	inserter.Put(metadata.Catalog, candidate)
 }
 
 func TestJsonCatalogLister(t *testing.T) {
@@ -65,7 +62,7 @@ func TestJsonCatalogLister(t *testing.T) {
 		t.Fail()
 	}
 
-	if list[0].GetID() != "Test" {
+	if list[0].Identifier != "Test" {
 		t.Fail()
 	}
 }
@@ -92,24 +89,15 @@ func TestJsonEventReader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if e.GetName() != "test" {
+	if e.EntityName != "test" {
 		t.Fail()
 	}
 
-	if e.GetID() != "Test" {
+	if e.Identifier != "Test" {
 		t.Fail()
 	}
 
-	if e.GetAttributes() == nil {
-		t.Fail()
-	}
-
-	eventEntity, ok := e.(*entity.EventEntity)
-	if !ok {
-		t.Fail()
-	}
-
-	if eventEntity.EventTime.IsZero() {
+	if e.Attributes == nil {
 		t.Fail()
 	}
 }
@@ -121,16 +109,13 @@ func TestJsonEventReplacer(t *testing.T) {
 		"number_attribute": 100,
 	}
 
-	var candidate = entity.EventEntity{
-		Metadata: entity.Metadata{
-			EntityName: "test",
-			Attributes: attributes,
-			Identifier: "Test",
-		},
-		EventTime: time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC),
+	var candidate *entity.Entity = &entity.Entity{
+		EntityName: "test",
+		Attributes: attributes,
+		Identifier: "Test",
 	}
 
-	inserter.Put(candidate)
+	inserter.Put(metadata.Event, candidate)
 }
 
 func TestJsonEventLister(t *testing.T) {
@@ -142,7 +127,7 @@ func TestJsonEventLister(t *testing.T) {
 		t.Fail()
 	}
 
-	if list[0].GetID() != "Test" {
+	if list[0].Identifier != "Test" {
 		t.Fail()
 	}
 }

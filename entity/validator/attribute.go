@@ -101,7 +101,7 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 	}
 
 	for key, elem := range view.(map[string]any) {
-		refValue, ok := refEntity.GetAttributes()[key]
+		refValue, ok := refEntity.Attributes[key]
 		if !ok {
 			return fmt.Errorf("attribute %q is not present in reference entity %q. entity attribute: %q", key, reference, name)
 		}

@@ -31,5 +31,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/post/:type/:name", app.postEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/list-view/:type/:name", app.listEntities)
 
+	router.HandlerFunc(http.MethodPost, "/v1/chatgpt/:type/:name", app.postChatGPT)
+
 	return app.enableCORS(router)
 }
