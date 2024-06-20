@@ -4,12 +4,13 @@ type IndexType int
 type IndexTypeMapType map[IndexType]interface{}
 
 const (
-	BTreeG IndexType = 1
-	Bleve IndexType = 2
+	Loop   IndexType = 1
+	BTreeG IndexType = 2
+	Bleve  IndexType = 3
 )
 
 func (e IndexType) String() string {
-	return [...]string{"BTreeG", "Bleve"}[e-1]
+	return [...]string{"Loop", "BTreeG", "Bleve"}[e-1]
 }
 
 type (

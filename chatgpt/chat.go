@@ -35,7 +35,10 @@ func SaveNewEntity(entityType metadata.EntityType, name string, request string) 
 		return err
 	}
 
-	entityapi.SaveEntity(entityType, name, attributeValues)
+	err = entityapi.SaveEntity(entityType, name, attributeValues)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
