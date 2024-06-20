@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/araddon/dateparse"
 	"github.com/ukubenet/metadata-repository/entity"
 	entitystorage "github.com/ukubenet/metadata-repository/entity/storage"
 	"github.com/ukubenet/metadata-repository/metadata"
@@ -53,11 +54,30 @@ func validateAttributeValue(name string, value interface{}, meta metadata.Attrib
 	case metadata.TableType:
 		return validateTable(name, value, meta)
 	case metadata.StringType:
+		if _, ok := value.(string); !ok {
+			return fmt.Errorf("type %q of attribute %q is not string", metatype, name)
+		}
 	case metadata.IntegerType:
+		if _, ok := value.(int); !ok {
+			return fmt.Errorf("type %q of attribute %q is not integer", metatype, name)
+		}
 	case metadata.NumberType:
+		if _, ok := value.(float64); !ok {
+			return fmt.Errorf("type %q of attribute %q is not number", metatype, name)
+		}
 	case metadata.DatetimeType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("problem with string representation")
+		}
+		_, err := dateparse.ParseAny(v)
+		if err != nil {
+			return fmt.Errorf("value type %q of attribute %q is not time. value: %q", metatype, name, value)
+		}
 	case metadata.BooleanType:
-		// do nothing
+		if _, ok := value.(bool); !ok {
+			return fmt.Errorf("type %q of attribute %q is not bool", metatype, name)
+		}
 	default:
 		return fmt.Errorf("type %q of attribute %q is not defined", metatype, name)
 	}

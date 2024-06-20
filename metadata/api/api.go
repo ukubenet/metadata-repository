@@ -27,7 +27,16 @@ func PutMetadata(entityType metadata.EntityType, entitymeta *metadata.EntityMeta
 		return errors.New("entity name not defined")
 	}
 	if len(entitymeta.Attributes) == 0 {
-		return errors.New("etity attributes not defined")
+		return errors.New("entity attributes not defined")
+	}
+
+	if entityType == metadata.Event {
+		if _, ok := entitymeta.Attributes["EventTime"]; !ok {
+			return errors.New("event entity must have EventTime attribute")
+		}
+		if entitymeta.Attributes["EventTime"]["type"] != metadata.DatetimeType {
+			return errors.New("type of EventTime attribute must be dateTime")
+		}
 	}
 
 	if err := metavalidator.ValidateAttributes(entitymeta.Attributes); err != nil {

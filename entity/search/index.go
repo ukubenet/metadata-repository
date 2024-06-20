@@ -114,6 +114,8 @@ func CreateFactory(indexType metadata.IndexType) *EntityIndex {
 	factory := NewFactory()
 	if indexType == metadata.BTreeG {
 		factory.Use(searchadapter.CreateBTreeG())
+	} else if indexType == metadata.Loop {
+		factory.Use(searchadapter.CreateLoop())
 	}
 
 	return factory
