@@ -142,42 +142,34 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 }
 
 func validateTable(name string, value interface{}, meta metadata.Attribute) (err error) {
-	tableMap, ok := value.(map[string]any)
+	table, ok := value.([]entity.AttributeValues)
 	if !ok {
-		return fmt.Errorf("table attribute %q is not a string map", name)
+		return fmt.Errorf("table attribute %q is not a array of AttributeValues", name)
 	}
 
-	columnsRaw, ok := tableMap["columns"]
-	if !ok {
-		return fmt.Errorf("table attribute %q doesn't have columns property", name)
-	}
-
-	columns, ok := columnsRaw.(map[string]any)
-	if !ok {
-		return fmt.Errorf("columns property of table attribute %q isn't a string map", name)
-	}
-
-	metaColumnsRaw, ok := meta["columns"]
-	if !ok {
-		return fmt.Errorf("table attribute %q doesn't have columns meta property", name)
-	}
-
-	metaColumnsMap, ok := metaColumnsRaw.(map[string]any)
-	if !ok {
-		return fmt.Errorf("columns meta property of table attribute %q isn't a string", name)
-	}
-
-	for columnName, columnValue := range columns {
-		metaColumnRaw, ok := metaColumnsMap[columnName]
-		if !ok {
-			return fmt.Errorf("meta property for column %q of table attribute %q does not exist", columnName, name)
+	for _, columns := range table {
+		err = validateColumns(columns, meta)
+		if err != nil {
+			return err
 		}
-		metaColumn, ok := metaColumnRaw.(map[string]any)
+	}
+
+	return
+}
+
+func validateColumns(columns map[string]any, meta metadata.Attribute) (err error) {
+	for key, value := range columns {
+		metaColumnMap, ok := meta["columns"].(map[string]any)[key]
 		if !ok {
-			return fmt.Errorf("meta property for column %q of table attribute %q isn't a string map", columnName, name)
+			return fmt.Errorf("not map for column %q", key)
 		}
 
-		err = validateAttributeValue(columnName, columnValue, metaColumn)
+		metaColumn := make(metadata.Attribute)
+		for key, value := range metaColumnMap.(map[string]any) {
+			metaColumn[key] = value
+		}
+
+		err = validateAttributeValue(key, value, metaColumn)
 		if err != nil {
 			return err
 		}
