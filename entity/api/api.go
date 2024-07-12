@@ -104,3 +104,43 @@ func GenerateReferenceAttributeValue(meta *metadata.EntityMetadata, name string,
 		"view":      view,
 	}, nil
 }
+
+func GenerateReferenceAttributeValueForTableColumn(meta *metadata.EntityMetadata, attribute string, columnName string, reference string) (map[string]any, error) {
+	if meta.Attributes[attribute]["type"] != "table" {
+		return nil, fmt.Errorf("attribute %q should be a table type", attribute)
+	}
+
+	columnMetadata, ok := meta.Attributes[attribute]["columns"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("attribute %q does not have column metadata", attribute)
+	}
+
+	columnType, ok := columnMetadata[columnName].(map[string]interface{})["type"].(string)
+	if !ok || columnType != "reference" {
+		return nil, fmt.Errorf("column %q of attribute %q should be a reference type", columnName, attribute)
+	}
+
+	columnMetadataMap := columnMetadata[columnName].(map[string]interface{})
+
+	viewFields := columnMetadataMap["view"]
+	refType := columnMetadataMap["referenceType"].(string)
+	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
+	if !ok {
+		return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", columnMetadataMap["reference"].(string), refType)
+	}
+
+	refEntity, err := ReadEntity(referenceType, columnMetadataMap["reference"].(string), reference)
+	if err != nil {
+		return nil, err
+	}
+	view := make(map[string]interface{})
+	for _, viewFieldName := range viewFields.([]interface{}) {
+		view[viewFieldName.(string)] = refEntity.Attributes[viewFieldName.(string)]
+	}
+
+	return map[string]any{
+		"reference": reference,
+		"type":      "reference",
+		"view":      view,
+	}, nil
+}
