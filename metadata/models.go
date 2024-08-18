@@ -45,3 +45,87 @@ type EntityMetadata struct {
 type Attributes map[string]Attribute
 
 type Attribute map[string]any
+
+type StructedAttributes map[string]StructedAttribute
+
+type StructedAttribute struct {
+	Type  string `json:"type"`
+	Specs interface{}
+}
+
+type ReferenceSpecs struct {
+	View       []string   `json:"view"`
+	EntityType EntityType `json:"entityType"`
+	Reference  string     `json:"reference"`
+}
+
+type TableSpecs struct {
+	Columns StructedAttributes `json:"columns"`
+}
+
+type PrimitiveType struct {
+}
+
+func GetStructedAttributes(attributes Attributes) StructedAttributes {
+	structedAttributes := make(StructedAttributes)
+
+	for name, attribute := range attributes {
+		attrType, ok := attribute["type"]
+		if !ok {
+			panic("attribute doesn't have type")
+		}
+		switch attrType.(string) {
+		case ReferenceType:
+			structedAttributes[name] = StructedAttribute{
+				Type: ReferenceType,
+				Specs: ReferenceSpecs{
+					Reference:  attribute["reference"].(string),
+					EntityType: EntityTypeMap[attribute["referenceType"].(string)],
+					View:       interfaceArayToStringArray(attribute["view"].([]interface{})),
+				},
+			}
+		case TableType:
+			structedAttributes[name] = StructedAttribute{
+				Type: TableType,
+				Specs: TableSpecs{
+					Columns: GetStructedAttributes(mapToAttributes(attribute["columns"].(map[string]interface{}))),
+				},
+			}
+		default:
+			structedAttributes[name] = StructedAttribute{
+				Type:  attrType.(string),
+				Specs: PrimitiveType{},
+			}
+		}
+	}
+
+	return structedAttributes
+}
+
+func (entity *EntityMetadata) GetStructedAttributes() StructedAttributes {
+	return GetStructedAttributes(entity.Attributes)
+}
+
+func interfaceArayToStringArray(interfaceArray []interface{}) []string {
+	stringArray := make([]string, len(interfaceArray))
+	for i, v := range interfaceArray {
+		stringArray[i] = v.(string)
+	}
+	return stringArray
+}
+
+func mapToAttributes(m map[string]any) Attributes {
+	attributes := make(Attributes)
+	for key, value := range m {
+		attributes[key] = mapToAttribute(value.(map[string]any))
+	}
+	return attributes
+}
+
+func mapToAttribute(m map[string]any) Attribute {
+	attribute := make(Attribute)
+	for key, value := range m {
+		attribute[key] = value
+	}
+	return attribute
+}

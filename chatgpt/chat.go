@@ -4,12 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
+	"github.com/google/uuid"
 	"github.com/maiqingqiang/typechat-go"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
-	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
@@ -35,7 +34,12 @@ func SaveNewEntity(entityType metadata.EntityType, name string, request string) 
 		return err
 	}
 
-	err = entityapi.SaveEntity(entityType, name, attributeValues)
+	e := new(entity.Entity)
+	e.EntityName = name
+	e.Attributes = attributeValues
+	e.Identifier = uuid.New().String()
+
+	err = entityapi.PutEntity(entityType, e)
 	if err != nil {
 		return err
 	}
@@ -70,16 +74,24 @@ func chatGPTResponse(scheme string, request string) (*map[string]any, error) {
 
 func getRequestAttributesFromMeta(entityType metadata.EntityType, meta *metadata.EntityMetadata) []any {
 
+	requestAttributes := getRequestAttributesFromMetaAttributes(meta.Attributes)
+	if entityType == metadata.Event {
+		requestAttributes = append(requestAttributes, "time")
+	}
+
+	return requestAttributes
+}
+
+func getRequestAttributesFromMetaAttributes(attributes metadata.Attributes) []any {
 	requestAttributes := []any{}
-	for name, value := range meta.Attributes {
-		if value["type"] == "reference" {
+	for name, value := range attributes {
+		if value["type"] == "table" {
+			requestAttributes = append(requestAttributes, getRequestAttributesFromMetaAttributes(value["columns"].(metadata.Attributes)))
+		} else if value["type"] == "reference" {
 			requestAttributes = append(requestAttributes, map[string]any{name: value["view"]})
 		} else {
 			requestAttributes = append(requestAttributes, name)
 		}
-	}
-	if entityType == metadata.Event {
-		requestAttributes = append(requestAttributes, "time")
 	}
 
 	return requestAttributes
@@ -88,62 +100,10 @@ func getRequestAttributesFromMeta(entityType metadata.EntityType, meta *metadata
 func getEntityAttributeValuesFromResponse(response map[string]any, meta *metadata.EntityMetadata) (entity.AttributeValues, error) {
 
 	attributeValues := make(entity.AttributeValues)
-	for name, value := range meta.Attributes {
-		if value["type"] == "reference" {
-			refType := value["referenceType"].(string)
-			referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
-			if !ok {
-				return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", value["reference"].(string), refType)
-			}
-
-			refmeta, err := metaapi.ReadMetadata(referenceType, value["reference"].(string))
-			if err != nil {
-				return nil, err
-			}
-
-			searchCriteria, ok := response[name]
-			if !ok {
-				return nil, fmt.Errorf("attribute %q is not in response", name)
-			}
-
-			searchCriteriaMap, ok := searchCriteria.(map[string]any)
-			if !ok {
-				return nil, fmt.Errorf("search criteria for attribute %q is not a map", name)
-			}
-
-			var indexName string = ""
-			for indName, indexMeta := range refmeta.SearchCriteria {
-				foundIndex := true
-				for _, fieldName := range indexMeta.Attributes {
-					if _, ok := searchCriteriaMap[fieldName]; !ok {
-						foundIndex = false
-						break
-					}
-				}
-
-				if foundIndex {
-					indexName = indName
-				}
-				break
-			}
-
-			if indexName == "" {
-				return nil, fmt.Errorf("no search index for defined criteria")
-			}
-
-			indexValueMap := make(indexItem.ValueMap)
-			for _, fieldName := range refmeta.SearchCriteria[indexName].Attributes {
-				indexValueMap[fieldName] = searchCriteriaMap[fieldName]
-			}
-
-			list, err := entityapi.SearchEntities(referenceType, meta.Attributes[name]["reference"].(string), indexName, indexValueMap)
-			if err != nil {
-				return nil, err
-			}
-			if len(list) != 1 {
-				return nil, fmt.Errorf("search by reference should find only 1 record. Attribute name: %q", name)
-			}
-			attributeValues[name], err = entityapi.GenerateReferenceAttributeValue(meta, name, string(list[0]))
+	for name, value := range meta.GetStructedAttributes() {
+		if value.Type == metadata.ReferenceType {
+			var err error
+			attributeValues[name], err = findReference(response, name, value.Specs.(metadata.ReferenceSpecs))
 			if err != nil {
 				return nil, err
 			}
@@ -153,4 +113,18 @@ func getEntityAttributeValuesFromResponse(response map[string]any, meta *metadat
 	}
 
 	return attributeValues, nil
+}
+
+func findReference(response map[string]any, name string, refSpecs metadata.ReferenceSpecs) (entity.ReferenceValue, error) {
+	searchCriteria, ok := response[name]
+	if !ok {
+		return nil, fmt.Errorf("attribute %q is not in response", name)
+	}
+
+	searchCriteriaMap, ok := searchCriteria.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("search criteria for attribute %q is not a map", name)
+	}
+
+	return entityapi.FindReference(refSpecs, searchCriteriaMap)
 }
