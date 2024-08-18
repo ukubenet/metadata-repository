@@ -38,120 +38,54 @@ func executeTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
 	}
 }
 
-func createReferencesMap(meta *metadata.EntityMetadata) (map[string]map[string]map[string]string, error) {
-	references := make(map[string]map[string]map[string]string)
-
-	for name, value := range meta.Attributes {
-		metaAttribute := meta.Attributes[name]
-		if value["type"] != "reference" {
-			continue
-		}
-		referenceTypeString, ok := metaAttribute["referenceType"].(string)
-		if !ok {
-			return nil, fmt.Errorf("reference type of attribute %q does not exist or not a string (not define in metadata)", name)
-		}
-
-		referenceType, ok := metadata.EntityTypeMap[strings.ToLower(referenceTypeString)]
-		if !ok {
-			return nil, fmt.Errorf("reference type %q of attribute %q does not exist (not define in metadata)", referenceTypeString, name)
-		}
-
-		refEntities, err := entityapi.ReadEntities(referenceType, metaAttribute["reference"].(string))
-		if err != nil {
-			return nil, err
-		}
-
-		refEntityMap := make(map[string]map[string]string)
-		for _, refEntity := range refEntities {
-			refIdentifier := refEntity.Identifier
-			refViewMap := make(map[string]string)
-			for _, refViewName := range metaAttribute["view"].([]interface{}) {
-				refViewValue, ok := refEntity.Attributes[refViewName.(string)].(string)
-				if ok {
-					refViewMap[refViewName.(string)] = refViewValue
-				}
-			}
-
-			refEntityMap[refIdentifier] = refViewMap
-		}
-		references[name] = refEntityMap
-	}
-
-	err := createReferencesMapForTable(meta, &references)
-	if err != nil {
-		return references, err
-	}
-
-	return references, nil
+func createReferencesMap(meta *metadata.EntityMetadata) map[string]map[string]map[string]any {
+	return populateReferencesMap(meta.GetStructedAttributes())
 }
 
-func createReferencesMapForTable(meta *metadata.EntityMetadata, references *map[string]map[string]map[string]string) error {
-	for name, value := range meta.Attributes {
-		metaAttribute := meta.Attributes[name]
-		if value["type"] != "table" {
-			continue
+func populateReferencesMap(attributes metadata.StructedAttributes) map[string]map[string]map[string]any {
+	references := make(map[string]map[string]map[string]any)
+
+	for name, attribute := range attributes {
+		if attribute.Type == metadata.ReferenceType {
+			metaRefSpecs, ok := attribute.Specs.(metadata.ReferenceSpecs)
+			if !ok {
+				panic("metadata reference attribute error conversion")
+			}
+
+			references[name] = entityapi.ReadReferences(&metaRefSpecs)
+		} else if attribute.Type == metadata.TableType {
+			metaTableSpecs, ok := attribute.Specs.(metadata.TableSpecs)
+			if !ok {
+				panic("metadata table attribute error conversion")
+			}
+
+			tableReferences := populateReferencesMap(metaTableSpecs.Columns)
+			for columnName, columnReferences := range tableReferences {
+				references[name+"."+columnName] = columnReferences
+			}
 		}
-		columns := metaAttribute["columns"].(map[string]any)
-		for columnName, columnMeta := range columns {
-			columnMetaMap, ok := columnMeta.(map[string]any)
-			if !ok {
-				continue
-			}
-			if columnMetaMap["type"] != "reference" {
-				continue
-			}
-			referenceTypeString, ok := columnMetaMap["referenceType"].(string)
-			if !ok {
-				return fmt.Errorf("reference type of attribute %q does not exist or not a string (not define in metadata)", name)
-			}
-
-			referenceType, ok := metadata.EntityTypeMap[strings.ToLower(referenceTypeString)]
-			if !ok {
-				return fmt.Errorf("reference type %q of attribute %q does not exist (not define in metadata)", referenceTypeString, name)
-			}
-
-			refEntities, err := entityapi.ReadEntities(referenceType, columnMetaMap["reference"].(string))
-			if err != nil {
-				return err
-			}
-
-			refEntityMap := make(map[string]map[string]string)
-			for _, refEntity := range refEntities {
-				refIdentifier := refEntity.Identifier
-				refViewMap := make(map[string]string)
-				for _, refViewName := range columnMetaMap["view"].([]interface{}) {
-					refViewValue, ok := refEntity.Attributes[refViewName.(string)].(string)
-					if ok {
-						refViewMap[refViewName.(string)] = refViewValue
-					}
-				}
-
-				refEntityMap[refIdentifier] = refViewMap
-			}
-			(*references)[name+"."+columnName] = refEntityMap
-		}
-
 	}
 
-	return nil
+	return references
 }
 
 func getAttributesFromForm(r *http.Request, meta *metadata.EntityMetadata) (entity.AttributeValues, error) {
+	metaAttributes := meta.GetStructedAttributes()
 	AttributesValues := make(entity.AttributeValues)
 	for key := range r.Form {
-		var tableKey string
+		var tableName string
 		if idx := strings.IndexByte(key, '.'); idx >= 0 {
-			tableKey = key[:idx]
+			tableName = key[:idx]
 		}
 
-		if tableKey != "" && meta.Attributes[tableKey]["type"] == "table" {
-			tableValues, err := getTableValuesFromForm(r, meta, tableKey)
+		if tableName != "" && metaAttributes[tableName].Type == metadata.TableType {
+			tableValues, err := getTableValuesFromForm(r, tableName, metaAttributes[tableName])
 			if err != nil {
 				return nil, err
 			}
-			AttributesValues[tableKey] = tableValues
-		} else if meta.Attributes[key]["type"] == "reference" {
-			refValue, err := entityapi.GenerateReferenceAttributeValue(meta, key, r.FormValue(key))
+			AttributesValues[tableName] = tableValues
+		} else if metaAttributes[key].Type == metadata.ReferenceType {
+			refValue, err := entityapi.RetrieveReferenceByEntityId(metaAttributes[key], r.FormValue(key))
 			if err != nil {
 				return nil, err
 			}
@@ -164,24 +98,28 @@ func getAttributesFromForm(r *http.Request, meta *metadata.EntityMetadata) (enti
 	return AttributesValues, nil
 }
 
-func getTableValuesFromForm(r *http.Request, meta *metadata.EntityMetadata, key string) ([]entity.AttributeValues, error) {
+func getTableValuesFromForm(r *http.Request, tableName string, meta metadata.StructedAttribute) ([]entity.AttributeValues, error) {
+	tableSpecs, ok := meta.Specs.(metadata.TableSpecs)
+	if !ok {
+		return nil, fmt.Errorf("meta type should be table")
+	}
+
 	tableRows := make([]entity.AttributeValues, 0)
 
-	tableMeta := meta.Attributes[key]
-
-	for columnName, columnMeta := range tableMeta["columns"].(map[string]any) {
-		for rowIndex, formValue := range r.Form[key+"."+columnName] {
+	for columnName, columnMeta := range tableSpecs.Columns {
+		for rowIndex, formValue := range r.Form[tableName+"."+columnName] {
 			if len(tableRows) <= rowIndex {
 				tableRows = append(tableRows, make(entity.AttributeValues))
 			}
 
-			columnMetaMap, ok := columnMeta.(map[string]any)
-			if !ok {
-				continue
-			}
-
-			if columnMetaMap["type"] == "reference" {
-				refValue, err := entityapi.GenerateReferenceAttributeValueForTableColumn(meta, key, columnName, formValue)
+			if columnMeta.Type == metadata.TableType {
+				tableValues, err := getTableValuesFromForm(r, tableName+"."+columnName, columnMeta)
+				if err != nil {
+					return nil, err
+				}
+				tableRows[rowIndex][columnName] = tableValues
+			} else if columnMeta.Type == metadata.ReferenceType {
+				refValue, err := entityapi.RetrieveReferenceByEntityId(columnMeta, formValue)
 				if err != nil {
 					return nil, err
 				}
@@ -219,17 +157,13 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	references, err := createReferencesMap(meta)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	references := createReferencesMap(meta)
 
 	tmplData := struct {
 		EntityType string
 		Meta       *metadata.EntityMetadata
 		Entity     entity.Entity
-		References map[string]map[string]map[string]string
+		References map[string]map[string]map[string]any
 	}{entityType, meta, *e, references}
 
 	executeTemplate(w, "edit", tmplData)
@@ -251,16 +185,12 @@ func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	references, err := createReferencesMap(meta)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	references := createReferencesMap(meta)
 
 	tmplData := struct {
 		EntityType string
 		Meta       *metadata.EntityMetadata
-		References map[string]map[string]map[string]string
+		References map[string]map[string]map[string]any
 	}{
 		entityType,
 		meta,

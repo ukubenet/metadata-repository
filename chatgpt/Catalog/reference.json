@@ -1,0 +1,1 @@
+{"entityName":"reference","attributes":{"id":{"type":"string"},"name":{"type":"string"}},"search":{"name":{"indexType":1,"attributes":["name"]}}}

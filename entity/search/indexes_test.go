@@ -92,7 +92,7 @@ func TestLoadIndexes(t *testing.T) {
 		t.Fail()
 	}
 
-	criteria := indexItem.ValueMap{
+	criteria := map[string]any{
 		"name":  "name",
 		"email": "name",
 	}

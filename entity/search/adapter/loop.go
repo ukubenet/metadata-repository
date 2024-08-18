@@ -38,7 +38,7 @@ func (l *Loop) Get(item indexItem.IndexItem) bool {
 func (l *Loop) Search(criteria any) (result []indexItem.Key, err error) {
 	for _, indexIem := range l.list {
 		match := true
-		for fieldName, value := range criteria.(indexItem.ValueMap) {
+		for fieldName, value := range criteria.(map[string]any) {
 			if entityAttributeValueString, ok := indexIem.Values[fieldName].(string); ok {
 				if !strings.HasPrefix(entityAttributeValueString, value.(string)) {
 					match = false

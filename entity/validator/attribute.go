@@ -144,11 +144,11 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 func validateTable(name string, value interface{}, meta metadata.Attribute) (err error) {
 	table, ok := value.([]entity.AttributeValues)
 	if !ok {
-		return fmt.Errorf("table attribute %q is not a array of AttributeValues", name)
+		return fmt.Errorf("table attribute %q is not a slice of AttributeValues", name)
 	}
 
-	for _, columns := range table {
-		err = validateColumns(columns, meta)
+	for _, row := range table {
+		err = validateRows(row, meta)
 		if err != nil {
 			return err
 		}
@@ -157,15 +157,20 @@ func validateTable(name string, value interface{}, meta metadata.Attribute) (err
 	return
 }
 
-func validateColumns(columns map[string]any, meta metadata.Attribute) (err error) {
-	for key, value := range columns {
-		metaColumnMap, ok := meta["columns"].(map[string]any)[key]
+func validateRows(row map[string]any, meta metadata.Attribute) (err error) {
+	for key, value := range row {
+		metaColumnMap, ok := meta["columns"].(map[string]any)
 		if !ok {
 			return fmt.Errorf("not map for column %q", key)
 		}
 
+		column, ok := metaColumnMap[key]
+		if !ok {
+			return fmt.Errorf("meta property for column \"name\" of table attribute does not exist")
+		}
+
 		metaColumn := make(metadata.Attribute)
-		for key, value := range metaColumnMap.(map[string]any) {
+		for key, value := range column.(map[string]any) {
 			metaColumn[key] = value
 		}
 

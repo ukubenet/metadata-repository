@@ -157,17 +157,15 @@ func TestValidateRefereceAttributeViewNotString(t *testing.T) {
 
 func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
 	values := map[string]any{
-		"table": map[string]any{
-			"columns": map[string]any{
-				"name": "sample",
-			},
+		"table": []entity.AttributeValues{
+			{"name": "sample"},
 		},
 	}
 
 	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
-		"meta property for column \"name\" of table attribute \"table\" does not exist",
+		"meta property for column \"name\" of table attribute does not exist",
 	) {
 		t.Fatal(err)
 	}
@@ -175,13 +173,10 @@ func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
 
 func TestValidateTableAttributeSuccess(t *testing.T) {
 	values := map[string]any{
-		"table": map[string]any{
-			"columns": map[string]any{
-				"title": "sample",
-			},
+		"table": []entity.AttributeValues{
+			{"title": "sample"},
 		},
 	}
-
 	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
 	if err != nil {
 		t.Fatal(err)
