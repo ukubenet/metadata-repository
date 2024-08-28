@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"net/http"
 	"os"
 	"reflect"
@@ -280,6 +282,10 @@ func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/v1/list-view/"+entityType+"/"+name, http.StatusSeeOther)
 }
 
+type ChatGPT struct {
+	ChatGPT string `json:"ChatGPT"`
+}
+
 func (app *application) postChatGPT(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -291,9 +297,29 @@ func (app *application) postChatGPT(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
-	err := chatgpt.SaveNewEntity(entType, name, r.FormValue("ChatGPT"))
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+
+	var data ChatGPT
+	if err := json.Unmarshal(body, &data); err != nil {
+		http.Error(w, "Error unmarshalling request body", http.StatusBadRequest)
+		return
+	}
+
+	response, err := chatgpt.SaveNewEntity(entType, name, data.ChatGPT)
+	if err != nil {
+		if response != nil {
+			// Marshal map to JSON
+			jsonString, _ := json.Marshal(response)
+			if jsonString != nil {
+				http.Error(w, err.Error()+string(jsonString), http.StatusBadRequest)
+				return
+			}
+		}
+
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}

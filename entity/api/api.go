@@ -68,17 +68,17 @@ func ReadEntityTypes(entityType metadata.EntityType) ([]string, error) {
 	return list, err
 }
 
-func ReadReference(refSpecs *metadata.ReferenceSpecs, reference string) (entity.ReferenceValue, error) {
+func ReadReference(refSpecs *metadata.ReferenceSpecs, reference string) (map[string]any, error) {
 	refEntity, err := ReadEntity(refSpecs.EntityType, refSpecs.Reference, reference)
 	if err != nil {
 		return nil, err
 	}
-	view := make([]any, 0)
+	view := make(map[string]any, 0)
 	for _, viewFieldName := range refSpecs.View {
-		view = append(view, refEntity.Attributes[viewFieldName])
+		view[viewFieldName] = refEntity.Attributes[viewFieldName]
 	}
 
-	return entity.ReferenceValue{refEntity.Identifier: view}, nil
+	return map[string]any{"reference": refEntity.Identifier, "type": refSpecs.EntityType.String(), "view": view}, nil
 }
 
 func FindSearchIndex(meta metadata.EntityMetadata, createria map[string]any) (*string, error) {
@@ -99,13 +99,13 @@ func FindSearchIndex(meta metadata.EntityMetadata, createria map[string]any) (*s
 	}
 
 	if indexName == nil {
-		return indexName, fmt.Errorf("no search index for defined criteria")
+		return indexName, fmt.Errorf("no search index for defined criteria. Entity: %s, Criteria: %v", meta.EntityName, createria)
 	}
 
 	return indexName, nil
 }
 
-func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (entity.ReferenceValue, error) {
+func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (map[string]any, error) {
 	refmeta, err := metaapi.ReadMetadata(refSpecs.EntityType, refSpecs.Reference)
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (
 		return nil, err
 	}
 	if len(list) != 1 {
-		return nil, fmt.Errorf("search by reference should find only 1 record")
+		return nil, fmt.Errorf("search by reference should find only 1 record. entity: %s, criteria: %v", refSpecs.Reference, createria)
 	}
 
 	return ReadReference(&refSpecs, string(list[0]))
@@ -155,46 +155,6 @@ func RetrieveReferenceByEntityId(attribute metadata.StructedAttribute, entityId 
 		"view":      view,
 	}, nil
 }
-
-// func GenerateReferenceAttributeValueForTableColumn(meta *metadata.EntityMetadata, attribute string, columnName string, reference string) (map[string]any, error) {
-// 	if meta.Attributes[attribute]["type"] != "table" {
-// 		return nil, fmt.Errorf("attribute %q should be a table type", attribute)
-// 	}
-
-// 	columnMetadata, ok := meta.Attributes[attribute]["rows"].(map[string]interface{})
-// 	if !ok {
-// 		return nil, fmt.Errorf("attribute %q does not have column metadata", attribute)
-// 	}
-
-// 	columnType, ok := columnMetadata[columnName].(map[string]interface{})["type"].(string)
-// 	if !ok || columnType != "reference" {
-// 		return nil, fmt.Errorf("column %q of attribute %q should be a reference type", columnName, attribute)
-// 	}
-
-// 	columnMetadataMap := columnMetadata[columnName].(map[string]interface{})
-
-// 	viewFields := columnMetadataMap["view"]
-// 	refType := columnMetadataMap["referenceType"].(string)
-// 	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
-// 	if !ok {
-// 		return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", columnMetadataMap["reference"].(string), refType)
-// 	}
-
-// 	refEntity, err := ReadEntity(referenceType, columnMetadataMap["reference"].(string), reference)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	view := make(map[string]interface{})
-// 	for _, viewFieldName := range viewFields.([]interface{}) {
-// 		view[viewFieldName.(string)] = refEntity.Attributes[viewFieldName.(string)]
-// 	}
-
-// 	return map[string]any{
-// 		"reference": reference,
-// 		"type":      "reference",
-// 		"view":      view,
-// 	}, nil
-// }
 
 func ReadReferences(metaSpecs *metadata.ReferenceSpecs) map[string]map[string]any {
 	entities, err := ReadEntities(metaSpecs.EntityType, metaSpecs.Reference)

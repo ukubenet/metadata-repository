@@ -88,7 +88,7 @@ func GetStructedAttributes(attributes Attributes) StructedAttributes {
 			structedAttributes[name] = StructedAttribute{
 				Type: TableType,
 				Specs: TableSpecs{
-					Columns: GetStructedAttributes(mapToAttributes(attribute["columns"].(map[string]interface{}))),
+					Columns: GetStructedAttributes(MapToAttributes(attribute["columns"].(map[string]interface{}))),
 				},
 			}
 		default:
@@ -114,7 +114,7 @@ func interfaceArayToStringArray(interfaceArray []interface{}) []string {
 	return stringArray
 }
 
-func mapToAttributes(m map[string]any) Attributes {
+func MapToAttributes(m map[string]any) Attributes {
 	attributes := make(Attributes)
 	for key, value := range m {
 		attributes[key] = mapToAttribute(value.(map[string]any))
