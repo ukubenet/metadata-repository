@@ -4,17 +4,19 @@ import (
 	"testing"
 
 	config "github.com/ukubenet/metadata-repository/config"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestMain(m *testing.M) {
 	config.LoadConfig("../../config", "test")
+	global.SetAppName("test")
 	m.Run()
 }
 
 func TestReader(t *testing.T) {
 	entity := new(metadata.EntityMetadata)
-	name := "test/Test"
+	name := "Test"
 
 	reader := CreateFactory(metadata.Catalog)
 	adapter := reader.CreateAdapter()
@@ -35,7 +37,7 @@ func TestReader(t *testing.T) {
 
 func TestReplacer(t *testing.T) {
 	entity := new(metadata.EntityMetadata)
-	name := "test/Test"
+	name := "Test"
 
 	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()
@@ -57,8 +59,8 @@ func TestReplacer(t *testing.T) {
 
 func TestEraser(t *testing.T) {
 	entity := new(metadata.EntityMetadata)
-	name := "test/Test"
-	entityToDelete := "test/EntityToDelete"
+	name := "Test"
+	entityToDelete := "EntityToDelete"
 
 	factory := CreateFactory(metadata.Catalog)
 	adapter := factory.CreateAdapter()

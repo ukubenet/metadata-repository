@@ -6,11 +6,13 @@ import (
 
 	config "github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestMain(m *testing.M) {
 	config.LoadConfig("../../config", "test")
+	global.SetAppName("test")
 	m.Run()
 
 }
@@ -31,7 +33,7 @@ func TestValidateAttributeValueNoMeta(t *testing.T) {
 		"name": "sample",
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(err.Error(), "no such attribute \"name\"") {
 		t.Fatal(err)
 	}
@@ -42,7 +44,7 @@ func TestValidateAttributeReferenceMalformed(t *testing.T) {
 		"sample": "string",
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(err.Error(), "reference attribute \"sample\" is malformed") {
 		t.Fatal(err)
 	}
@@ -58,7 +60,7 @@ func TestValidateAttributeReferenceViewAttributeMismatch(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
 		"attribute \"missed\" is not present in reference entity \"Reference\". entity attribute: \"sample\"",
@@ -72,15 +74,15 @@ func TestValidateAttributeReferenceViewValueMismatch(t *testing.T) {
 		"sample": map[string]any{
 			"reference": "Reference",
 			"view": map[string]any{
-				"name": "value",
+				"name": "inconsistent value",
 			},
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
-		"value \"value\" from view attribute \"name\" of reference attribute \"sample\" don't belong to reference entity. Value in ref entity: \"string\"",
+		"value \"inconsistent value\" from view attribute \"name\" of reference attribute \"sample\" don't belong to reference entity. Value in ref entity: \"string\"",
 	) {
 		t.Fatal(err)
 	}
@@ -96,7 +98,7 @@ func TestValidateAttributeReferenceSuccess(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +114,7 @@ func TestValidateAttributeReferenceReadError(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
 		"error to read reference \"No Reference\" in attribute \"sample\"",
@@ -129,7 +131,7 @@ func TestValidateReferenceAttributeViewNotMap(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
 		"view of reference attribute \"sample\" is not a map",
@@ -146,7 +148,7 @@ func TestValidateRefereceAttributeViewNotString(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
 		"reference of attribute \"sample\" does not exist or not a string",
@@ -162,7 +164,7 @@ func TestValidateTableAttributeColumnsMismatch(t *testing.T) {
 		},
 	}
 
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if !strings.Contains(
 		err.Error(),
 		"meta property for column \"name\" of table attribute does not exist",
@@ -177,7 +179,7 @@ func TestValidateTableAttributeSuccess(t *testing.T) {
 			{"title": "sample"},
 		},
 	}
-	err := ValidateAttributeValues(metadata.Catalog, "test/TestMeta", values)
+	err := ValidateAttributeValues(metadata.Catalog, "TestMeta", values)
 	if err != nil {
 		t.Fatal(err)
 	}

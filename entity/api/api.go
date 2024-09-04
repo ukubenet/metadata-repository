@@ -52,7 +52,10 @@ func ReadEntities(entityType metadata.EntityType, name string) ([]entity.Entity,
 }
 
 func SearchEntities(entityType metadata.EntityType, name string, indexName string, criteria any) ([]indexItem.Key, error) {
-	index := entitysearch.Indexes[entityType][name][indexName]
+	index, ok := entitysearch.Indexes[entityType][name][indexName]
+	if !ok {
+		return nil, fmt.Errorf("no such index %q, entity: %q", indexName, name)
+	}
 
 	list, err := index.Searcher.Search(criteria)
 

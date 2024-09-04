@@ -15,6 +15,7 @@ import (
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
+	global "github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
@@ -27,7 +28,7 @@ var fns = template.FuncMap{
 
 func executeTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
 	path, _ := os.Getwd()
-	tmplFile := path + config.Config.Metadata.Tmplpath + tmplName + ".tmpl"
+	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + tmplName + ".tmpl"
 	tmpl, err := template.New(tmplName + ".tmpl").Funcs(fns).ParseFiles(tmplFile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -138,6 +139,9 @@ func getTableValuesFromForm(r *http.Request, tableName string, meta metadata.Str
 func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 	entityType := params.ByName("type")
@@ -173,6 +177,10 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
@@ -204,6 +212,10 @@ func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
@@ -240,6 +252,9 @@ func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
 
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
@@ -288,6 +303,9 @@ type ChatGPT struct {
 
 func (app *application) postChatGPT(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
 
 	name := params.ByName("name")
 	entityType := params.ByName("type")

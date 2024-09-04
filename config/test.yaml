@@ -1,8 +1,11 @@
 deployer:
     adapter: json_file
-    path: /
+    path: ""
+    entitysubpath: entity/json
 
 metadata:
     adapter: json_file
-    path: /
+    path: ""
+    metasubpath: metadata/json
+    tmplsubpath: metadata/tmpl
 

@@ -7,10 +7,13 @@ import (
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestGetEntityAttributeValuesFromResponse(t *testing.T) {
+	global.SetAppName("test")
+
 	tests := []struct {
 		name     string
 		response map[string]any

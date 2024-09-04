@@ -9,11 +9,15 @@ import (
 	"github.com/ukubenet/metadata-repository/entity"
 	entityapi "github.com/ukubenet/metadata-repository/entity/api"
 	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
+	global "github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
 
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
@@ -37,6 +41,11 @@ func (app *application) getOneEntity(rw http.ResponseWriter, r *http.Request) {
 
 func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
+
 	entityName := params.ByName("entity")
 	entityType := params.ByName("type")
 	indexName := params.ByName("index")
@@ -72,6 +81,10 @@ func (app *application) searchEntities(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
@@ -93,6 +106,10 @@ func (app *application) getAllEntities(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	entityType := params.ByName("type")
 
 	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
@@ -125,6 +142,10 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 
 func (app *application) deleteEntity(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	identifier := params.ByName("identifier")
 	entityType := params.ByName("type")

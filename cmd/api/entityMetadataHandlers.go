@@ -6,12 +6,17 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/deployer"
+	global "github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
 func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
@@ -34,6 +39,10 @@ func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 
 func (app *application) getMetadataList(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	entityType := params.ByName("type")
 
 	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
@@ -59,6 +68,10 @@ func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Requ
 
 func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
@@ -93,6 +106,10 @@ func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	entityType := params.ByName("type")
 
 	entityMetadata := new(metadata.EntityMetadata)
