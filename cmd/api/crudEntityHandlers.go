@@ -26,9 +26,7 @@ var fns = template.FuncMap{
 	},
 }
 
-func executeTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
-	path, _ := os.Getwd()
-	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + tmplName + ".tmpl"
+func executeTemplate(w http.ResponseWriter, tmplName string, tmplFile string, data interface{}) {
 	tmpl, err := template.New(tmplName + ".tmpl").Funcs(fns).ParseFiles(tmplFile)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -39,6 +37,12 @@ func executeTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func executeEntityTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
+	path, _ := os.Getwd()
+	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + tmplName + ".tmpl"
+	executeTemplate(w, tmplName, tmplFile, data)
 }
 
 func createReferencesMap(meta *metadata.EntityMetadata) map[string]map[string]map[string]any {
@@ -172,7 +176,7 @@ func (app *application) editEntity(w http.ResponseWriter, r *http.Request) {
 		References map[string]map[string]map[string]any
 	}{entityType, meta, *e, references}
 
-	executeTemplate(w, "edit", tmplData)
+	executeEntityTemplate(w, "edit", tmplData)
 }
 
 func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
@@ -207,7 +211,7 @@ func (app *application) newEntity(w http.ResponseWriter, r *http.Request) {
 		references,
 	}
 
-	executeTemplate(w, "new", tmplData)
+	executeEntityTemplate(w, "new", tmplData)
 }
 
 func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
@@ -247,7 +251,7 @@ func (app *application) listEntities(w http.ResponseWriter, r *http.Request) {
 		meta,
 		list,
 	}
-	executeTemplate(w, "list", tmplData)
+	executeEntityTemplate(w, "list", tmplData)
 }
 
 func (app *application) postEntity(w http.ResponseWriter, r *http.Request) {
@@ -301,7 +305,7 @@ type ChatGPT struct {
 	ChatGPT string `json:"ChatGPT"`
 }
 
-func (app *application) postChatGPT(w http.ResponseWriter, r *http.Request) {
+func (app *application) postEntityChatGPT(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	appName := params.ByName("app")

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	config "github.com/ukubenet/metadata-repository/config"
-	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
 )
 
 const version = "1.0.0"
@@ -47,7 +46,8 @@ func main() {
 		logger:    logger,
 	}
 
-	entitysearch.Indexes.LoadAllIndexes()
+	// Set app name
+	//entitysearch.Indexes.LoadAllIndexes()
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
