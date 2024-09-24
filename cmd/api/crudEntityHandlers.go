@@ -24,6 +24,15 @@ var fns = template.FuncMap{
 	"last": func(x int, a interface{}) bool {
 		return x == reflect.ValueOf(a).Len()-1
 	},
+	"add": func(a, b int) int { return a + b },
+	"notInSlice": func(slice []string, element string) bool {
+		for _, s := range slice {
+			if s == element {
+				return false
+			}
+		}
+		return true
+	},
 }
 
 func executeTemplate(w http.ResponseWriter, tmplName string, tmplFile string, data interface{}) {

@@ -11,10 +11,16 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
 
-	router.HandlerFunc(http.MethodGet, "/v1/metadata/:app/:type/:name", app.getMetadata)
-	router.HandlerFunc(http.MethodGet, "/v1/metadata-list/:app/:type", app.getMetadataList)
-	router.HandlerFunc(http.MethodPut, "/v1/metadata/:app/:type", app.putMetadata)
-	router.HandlerFunc(http.MethodDelete, "/v1/metadata/:app/:type/:name", app.deleteMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/metadata/api/get/:app/:type/:name", app.getMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/metadata/api/list/:app/:type", app.getMetadataList)
+	router.HandlerFunc(http.MethodPut, "/v1/metadata/api/:app/:type", app.putMetadata)
+	router.HandlerFunc(http.MethodDelete, "/v1/metadata/api/:app/:type/:name", app.deleteMetadata)
+
+	router.HandlerFunc(http.MethodGet, "/v1/metadata/edit/:app/:type/:name", app.editMetadata)
+	// router.HandlerFunc(http.MethodPut, "/v1/metadata/post/:app/:type/:name", app.postMetadata)
+	// router.HandlerFunc(http.MethodPut, "/v1/metadata/post/:app/:type", app.postMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/metadata/new/:app/:type", app.newMetadata)
+	router.HandlerFunc(http.MethodPost, "/v1/metadata/chatgpt", app.postMetadataChatGPT)
 
 	router.HandlerFunc(http.MethodGet, "/v1/attribute-types", app.getAllAttributeTypes)
 

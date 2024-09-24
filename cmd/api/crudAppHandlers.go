@@ -28,11 +28,11 @@ func (app *application) editApp(w http.ResponseWriter, r *http.Request) {
 		AppName string
 	}{appName}
 
-	executeAppTemplate(w, "edit", tmplData)
+	executeAppTemplate(w, "app_edit", tmplData)
 }
 
 func (app *application) newApp(w http.ResponseWriter, r *http.Request) {
-	executeAppTemplate(w, "new", nil)
+	executeAppTemplate(w, "app_new", nil)
 }
 
 func (app *application) listApps(w http.ResponseWriter, r *http.Request) {
@@ -60,7 +60,7 @@ func (app *application) listApps(w http.ResponseWriter, r *http.Request) {
 	}{
 		list,
 	}
-	executeAppTemplate(w, "list", tmplData)
+	executeAppTemplate(w, "app_list", tmplData)
 }
 
 func (app *application) deleteApp(rw http.ResponseWriter, r *http.Request) {
@@ -163,33 +163,6 @@ func (app *application) postAppChatGPT(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	http.Redirect(w, r, "/v1/", http.StatusSeeOther)
-}
-
-func (app *application) appConfiguration(w http.ResponseWriter, r *http.Request) {
-	params := httprouter.ParamsFromContext(r.Context())
-
-	appName := params.ByName("app")
-	global.SetAppName(appName)
-
-	catalogs, err := metaapi.ReadMetadataList(metadata.Catalog)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	events, err := metaapi.ReadMetadataList(metadata.Event)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	tmplData := struct {
-		Catalogs []string
-		Events   []string
-	}{
-		catalogs,
-		events,
-	}
-	executeAppTemplate(w, "config", tmplData)
 }
 
 func (app *application) runApp(w http.ResponseWriter, r *http.Request) {
