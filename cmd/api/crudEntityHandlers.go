@@ -35,8 +35,8 @@ var fns = template.FuncMap{
 	},
 }
 
-func executeTemplate(w http.ResponseWriter, tmplName string, tmplFile string, data interface{}) {
-	tmpl, err := template.New(tmplName + ".tmpl").Funcs(fns).ParseFiles(tmplFile)
+func executeTemplate(w http.ResponseWriter, tmplName string, tmplFiles []string, data interface{}) {
+	tmpl, err := template.New(tmplName + ".tmpl").Funcs(fns).ParseFiles(tmplFiles...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -51,7 +51,7 @@ func executeTemplate(w http.ResponseWriter, tmplName string, tmplFile string, da
 func executeEntityTemplate(w http.ResponseWriter, tmplName string, data interface{}) {
 	path, _ := os.Getwd()
 	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + tmplName + ".tmpl"
-	executeTemplate(w, tmplName, tmplFile, data)
+	executeTemplate(w, tmplName, []string{tmplFile}, data)
 }
 
 func createReferencesMap(meta *metadata.EntityMetadata) map[string]map[string]map[string]any {
