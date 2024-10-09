@@ -7,10 +7,13 @@ import (
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestGetEntityAttributeValuesFromResponse(t *testing.T) {
+	global.SetAppName("test")
+
 	tests := []struct {
 		name     string
 		response map[string]any
@@ -48,16 +51,20 @@ func TestGetEntityAttributeValuesFromResponse(t *testing.T) {
 				Attributes: metadata.Attributes{
 					"name": {"type": "string"},
 					"ref": {
-						"type":       metadata.ReferenceType,
-						"reference":  "reference",
-						"entityType": metadata.Catalog,
-						"view":       []string{"name"},
+						"type":          metadata.ReferenceType,
+						"reference":     "reference",
+						"referenceType": "catalog",
+						"view":          []any{"name"},
 					},
 				},
 			},
 			want: entity.AttributeValues{
 				"name": "Test Entity",
-				"ref":  entity.ReferenceValue{"id": []string{"Referenced Entity ChatTest"}},
+				"ref": map[string]any{
+					"reference": "id",
+					"type":      "Catalog",
+					"view":      map[string]any{"name": "Referenced Entity ChatTest"},
+				},
 			},
 			wantErr: false,
 		},
@@ -70,10 +77,10 @@ func TestGetEntityAttributeValuesFromResponse(t *testing.T) {
 				Attributes: metadata.Attributes{
 					"name": {"type": "string"},
 					"ref": {
-						"type":       metadata.ReferenceType,
-						"reference":  "reference",
-						"entityType": metadata.Catalog,
-						"view":       []string{"name"},
+						"type":          metadata.ReferenceType,
+						"reference":     "reference",
+						"referenceType": "catalog",
+						"view":          []any{"name"},
 					},
 				},
 			},
@@ -87,7 +94,7 @@ func TestGetEntityAttributeValuesFromResponse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getEntityAttributeValuesFromResponse(tt.response, tt.meta)
+			got, err := getEntityAttributeValuesFromResponse(tt.response, metadata.GetStructedAttributes(tt.meta.Attributes))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getEntityAttributeValuesFromResponse() error = %v, wantErr %v", err, tt.wantErr)
 				return

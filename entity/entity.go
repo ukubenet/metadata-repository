@@ -6,10 +6,11 @@ import (
 )
 
 type Entity struct {
-	EntityName string              `json:"entityName"`
-	EntityType metadata.EntityType `json:"entityType"`
-	Identifier string              `json:"identifier"`
-	Attributes AttributeValues     `json:"attributes"`
+	EntityName   string              `json:"entityName"`
+	EntityType   metadata.EntityType `json:"entityType"`
+	Identifier   string              `json:"identifier"`
+	Attributes   AttributeValues     `json:"attributes"`
+	Transactions map[string]any      `json:"transactions"`
 }
 
 type AttributeValues map[string]any
@@ -87,7 +88,5 @@ func (entity *Entity) GetStructedAttributes() StructedAttributeValues {
 	}
 	return GetStructedAttributeValues(entity.Attributes, meta.GetStructedAttributes())
 }
-
-
 
 // https://stackoverflow.com/questions/45055953/interface-method-with-multiple-return-types

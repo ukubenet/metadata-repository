@@ -15,10 +15,10 @@ func TestGetStructedAttributes(t *testing.T) {
 			name: "Reference type attribute",
 			attributes: Attributes{
 				"refAttr": {
-					"type":       ReferenceType,
-					"reference":  "someRef",
-					"entityType": Catalog,
-					"view":       []string{"view1", "view2"},
+					"type":          ReferenceType,
+					"reference":     "someRef",
+					"referenceType": "catalog",
+					"view":          []any{"view1", "view2"},
 				},
 			},
 			want: StructedAttributes{
@@ -37,9 +37,9 @@ func TestGetStructedAttributes(t *testing.T) {
 			attributes: Attributes{
 				"tableAttr": {
 					"type": TableType,
-					"columns": Attributes{
-						"col1": {"type": "string"},
-						"col2": {"type": "int"},
+					"columns": map[string]any{
+						"col1": map[string]any{"type": "string"},
+						"col2": map[string]any{"type": "int"},
 					},
 				},
 			},
@@ -68,15 +68,15 @@ func TestGetStructedAttributes(t *testing.T) {
 			name: "Mixed attribute types",
 			attributes: Attributes{
 				"refAttr": {
-					"type":       ReferenceType,
-					"reference":  "someRef",
-					"entityType": Catalog,
-					"view":       []string{"view1"},
+					"type":          ReferenceType,
+					"reference":     "someRef",
+					"referenceType": "catalog",
+					"view":          []any{"view1"},
 				},
 				"tableAttr": {
 					"type": TableType,
-					"columns": Attributes{
-						"col1": {"type": "int"},
+					"columns": map[string]any{
+						"col1": map[string]any{"type": "int"},
 					},
 				},
 				"primAttr": {"type": "bool"},

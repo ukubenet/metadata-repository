@@ -13,16 +13,18 @@ type EntityType int
 const (
 	Catalog EntityType = 1
 	Event   EntityType = 2
+	Balance EntityType = 3
 )
 
 func (e EntityType) String() string {
-	return [...]string{"Catalog", "Event"}[e-1]
+	return [...]string{"Catalog", "Event", "Balance"}[e-1]
 }
 
 var (
 	EntityTypeMap = map[string]EntityType{
 		"catalog": Catalog,
 		"event":   Event,
+		"balance": Balance,
 	}
 )
 
@@ -40,6 +42,8 @@ type EntityMetadata struct {
 	EntityName     string           `json:"entityName"`
 	SearchCriteria map[string]Index `json:"search"`
 	Attributes     Attributes       `json:"attributes"`
+	Transactions   Attributes       `json:"transactions"`
+	CustomTemplate string           `json:"customTemplate"`
 }
 
 type Attributes map[string]Attribute
@@ -88,7 +92,7 @@ func GetStructedAttributes(attributes Attributes) StructedAttributes {
 			structedAttributes[name] = StructedAttribute{
 				Type: TableType,
 				Specs: TableSpecs{
-					Columns: GetStructedAttributes(mapToAttributes(attribute["columns"].(map[string]interface{}))),
+					Columns: GetStructedAttributes(MapToAttributes(attribute["columns"].(map[string]interface{}))),
 				},
 			}
 		default:
@@ -114,7 +118,7 @@ func interfaceArayToStringArray(interfaceArray []interface{}) []string {
 	return stringArray
 }
 
-func mapToAttributes(m map[string]any) Attributes {
+func MapToAttributes(m map[string]any) Attributes {
 	attributes := make(Attributes)
 	for key, value := range m {
 		attributes[key] = mapToAttribute(value.(map[string]any))

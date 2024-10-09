@@ -6,12 +6,14 @@ import (
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
 	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
 func TestMain(m *testing.M) {
 	config.LoadConfig("../../config", "test")
+	global.SetAppName("test")
 	m.Run()
 
 }
@@ -87,7 +89,7 @@ func TestLoadIndexes(t *testing.T) {
 		},
 	}
 
-	found := entityIndexes["btree"].Getter.Get(indItem)
+	found := entityIndexes["name-email"].Getter.Get(indItem)
 	if found == false {
 		t.Fail()
 	}
@@ -96,7 +98,7 @@ func TestLoadIndexes(t *testing.T) {
 		"name":  "name",
 		"email": "name",
 	}
-	result, _ := entityIndexes["btree"].Searcher.Search(criteria)
+	result, _ := entityIndexes["name-email"].Searcher.Search(criteria)
 
 	if len(result) != 3 {
 		t.Fatal()

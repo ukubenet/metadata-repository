@@ -21,7 +21,7 @@ func Local(path string) *LocalDeployer {
 func (local *LocalDeployer) Deploy(entitymeta *metadata.EntityMetadata) (err error) {
 
 	dir := local.path + entitymeta.EntityName
-	if e := os.Mkdir(dir, 0755); !os.IsExist(e) {
+	if e := os.MkdirAll(dir, 0755); !os.IsExist(e) {
 		fi, _ := os.Stat(dir)
 		if !fi.Mode().IsDir() {
 			return e

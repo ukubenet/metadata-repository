@@ -1,1 +1,1 @@
-{"entityName":"test/Test","search":null,"attributes":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}}}
+{"entityName":"test/Test","search":null,"attributes":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}},"transactions":null,"customTemplate":""}
