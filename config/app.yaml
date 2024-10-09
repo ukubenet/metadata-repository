@@ -1,8 +1,10 @@
 deployer:
     adapter: json_file
-    path: /../../../data/activity/entity/json/
+    path: /../../../data
+    entitysubpath: entity/json
 
 metadata:
     adapter: json_file
-    path: /../../../data/activity/metadata/json/
-    tmplpath: /../../../data/activity/metadata/tmpl/
+    path: /../../../data
+    metasubpath: metadata/json
+    tmplsubpath: metadata/tmpl

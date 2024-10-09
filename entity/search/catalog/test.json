@@ -1,1 +1,0 @@
-{"entityName":"test","search":{"btree": {"indexType": 1, "attributes": ["name", "email"]}},"attributes":{"name":{"type":"string"},"email":{"type":"string"}}}

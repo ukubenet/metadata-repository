@@ -2,6 +2,7 @@ package entityvalidator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/araddon/dateparse"
@@ -58,11 +59,12 @@ func validateAttributeValue(name string, value interface{}, meta metadata.Attrib
 			return fmt.Errorf("type %q of attribute %q is not string", metatype, name)
 		}
 	case metadata.IntegerType:
-		if _, ok := value.(int); !ok {
+		if _, err := strconv.Atoi(value.(string)); err != nil {
 			return fmt.Errorf("type %q of attribute %q is not integer", metatype, name)
 		}
 	case metadata.NumberType:
-		if _, ok := value.(float64); !ok {
+		_, err := strconv.ParseFloat(value.(string), 64)
+		if err != nil {
 			return fmt.Errorf("type %q of attribute %q is not number", metatype, name)
 		}
 	case metadata.DatetimeType:
@@ -142,13 +144,24 @@ func validateReference(name string, value any, meta metadata.Attribute) (err err
 }
 
 func validateTable(name string, value interface{}, meta metadata.Attribute) (err error) {
-	table, ok := value.([]entity.AttributeValues)
+	table, ok := value.([]any)
 	if !ok {
-		return fmt.Errorf("table attribute %q is not a slice of AttributeValues", name)
+		tableAttrValues, ok := value.([]entity.AttributeValues)
+		if !ok {
+			return fmt.Errorf("table attribute %q is not a slice", name)
+		}
+		table = make([]any, len(tableAttrValues))
+		for i, v := range tableAttrValues {
+			table[i] = v
+		}
 	}
 
 	for _, row := range table {
-		err = validateRows(row, meta)
+		row, ok := row.(entity.AttributeValues)
+		if !ok {
+			return fmt.Errorf("row %v is not entity.AttributeValues", row)
+		}
+		err = validateRow(row, meta)
 		if err != nil {
 			return err
 		}
@@ -156,8 +169,7 @@ func validateTable(name string, value interface{}, meta metadata.Attribute) (err
 
 	return
 }
-
-func validateRows(row map[string]any, meta metadata.Attribute) (err error) {
+func validateRow(row entity.AttributeValues, meta metadata.Attribute) (err error) {
 	for key, value := range row {
 		metaColumnMap, ok := meta["columns"].(map[string]any)
 		if !ok {

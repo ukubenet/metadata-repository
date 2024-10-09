@@ -72,9 +72,14 @@ func (jc *JSONCodec) Put(candidate *metadata.EntityMetadata) (err error) {
 		return
 	}
 
-	os.WriteFile(jc.path+candidate.EntityName+Ext, output, 0644)
+	filePath := jc.path + candidate.EntityName + Ext
+	dir := filepath.Dir(filePath)
+	err = os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		return err
+	}
 
-	return
+	return os.WriteFile(filePath, output, 0644)
 }
 
 // Delete a json file containing entity metadata

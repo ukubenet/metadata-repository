@@ -1,0 +1,1 @@
+{"entityName":"TestMeta","search":null,"attributes":{"sample":{"reference":"Reference","referenceType":"Catalog","type":"reference","view":["name"]}, "table":{"columns":{"title":{"type":"string"}},"type":"table"}}}

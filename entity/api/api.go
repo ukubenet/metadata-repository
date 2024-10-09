@@ -3,7 +3,9 @@ package entityapi
 import (
 	"errors"
 	"fmt"
+	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/ukubenet/metadata-repository/entity"
 	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
 	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
@@ -15,6 +17,149 @@ import (
 
 func ReadEntity(entityType metadata.EntityType, name string, identifier string) (*entity.Entity, error) {
 	return storage.ReadEntity(entityType, name, identifier)
+}
+
+func DeleteEventTransactions(e *entity.Entity) error {
+
+	if len(e.Transactions) == 0 {
+		return errors.New("event transactions not defined")
+	}
+
+	for balanceName, balanceSpecs := range e.Transactions {
+		balanceMap := balanceSpecs.(map[string]any)
+
+		newChangeString, ok := balanceMap["new_change"].(string)
+		if !ok {
+			return errors.New("new_change not defined. Balance name: " + balanceName)
+		}
+
+		newChange, err := strconv.ParseFloat(newChangeString, 64)
+		if err != nil {
+			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
+		}
+
+		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
+		if !ok {
+			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
+		}
+
+		updateBalance(balanceName, newEntityReference, -newChange)
+	}
+
+	return nil
+}
+
+func PostEventTransactions(e *entity.Entity) error {
+
+	if len(e.Transactions) == 0 {
+		return errors.New("event transactions not defined")
+	}
+
+	for balanceName, balanceSpecs := range e.Transactions {
+		balanceMap := balanceSpecs.(map[string]any)
+
+		var oldChange float64
+		oldChangeString, ok := balanceMap["old_change"].(string)
+		if ok {
+			var err error
+			oldChange, err = strconv.ParseFloat(oldChangeString, 64)
+			if err != nil {
+				oldChange = 0
+			}
+		} else {
+			oldChange = 0
+		}
+
+		newChangeString, ok := balanceMap["new_change"].(string)
+		if !ok {
+			return errors.New("new_change not defined. Balance name: " + balanceName)
+		}
+
+		newChange, err := strconv.ParseFloat(newChangeString, 64)
+		if err != nil {
+			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
+		}
+
+		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
+		if !ok {
+			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
+		}
+
+		oldEntityReference, ok := balanceMap["old_entity_reference"].(string)
+		if ok {
+			updateBalance(balanceName, oldEntityReference, -oldChange)
+		}
+
+		updateBalance(balanceName, newEntityReference, newChange)
+	}
+
+	return nil
+}
+
+func updateBalance(balanceName string, entityReference string, change float64) error {
+	if change == 0 {
+		return nil
+	}
+
+	balanceEntities, err := ReadEntities(metadata.Balance, balanceName)
+	if err != nil {
+		return fmt.Errorf("balance reference not found: Balance name: %s, Error: %v", balanceName, err)
+	}
+
+	foundBalanceEntity := entity.Entity{}
+	for _, balanceEntity := range balanceEntities {
+		if balanceEntity.Attributes[balanceName].(map[string]any)["reference"].(string) == entityReference {
+			foundBalanceEntity = balanceEntity
+
+		}
+	}
+	if foundBalanceEntity.Identifier != "" {
+		balanceString, ok := foundBalanceEntity.Attributes["balance"].(string)
+		if !ok {
+			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
+		}
+		balance, err := strconv.ParseFloat(balanceString, 64)
+		if err != nil {
+			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
+		}
+		balance += change
+		foundBalanceEntity.Attributes["balance"] = strconv.FormatFloat(balance, 'f', -1, 64)
+
+		err = PutEntity(metadata.Balance, &foundBalanceEntity)
+		if err != nil {
+			return err
+		}
+	} else {
+		balanceEntity := &entity.Entity{
+			EntityName: balanceName,
+			Identifier: uuid.New().String(),
+			Attributes: make(map[string]interface{}),
+		}
+
+		meta, err := metaapi.ReadMetadata(metadata.Balance, balanceName)
+		if err != nil {
+			return err
+		}
+		metaAttributes := meta.GetStructedAttributes()
+		for key := range metaAttributes {
+			if metaAttributes[key].Type == metadata.ReferenceType {
+				refValue, err := RetrieveReferenceByEntityId(metaAttributes[key], entityReference)
+				if err != nil {
+					return err
+				}
+				balanceEntity.Attributes[key] = refValue
+			} else {
+				balanceEntity.Attributes["balance"] = strconv.FormatFloat(change, 'f', -1, 64)
+			}
+		}
+
+		err = PutEntity(metadata.Balance, balanceEntity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func PutEntity(entityType metadata.EntityType, entity *entity.Entity) error {
@@ -32,6 +177,13 @@ func PutEntity(entityType metadata.EntityType, entity *entity.Entity) error {
 		return err
 	}
 
+	if entityType == metadata.Event {
+		err := PostEventTransactions(entity)
+		if err != nil {
+			return err
+		}
+	}
+
 	factoryWriter := storage.CreateFactory()
 	adapter := factoryWriter.CreateAdapter()
 	err := adapter.Put(entityType, entity)
@@ -42,6 +194,15 @@ func PutEntity(entityType metadata.EntityType, entity *entity.Entity) error {
 func DeleteEntity(entityType metadata.EntityType, name string, identifier string) error {
 	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
+
+	if entityType == metadata.Event {
+		entity, _ := ReadEntity(entityType, name, identifier)
+		err := DeleteEventTransactions(entity)
+		if err != nil {
+			return err
+		}
+	}
+
 	err := adapter.Delete(entityType, name, identifier)
 
 	return err
@@ -52,7 +213,10 @@ func ReadEntities(entityType metadata.EntityType, name string) ([]entity.Entity,
 }
 
 func SearchEntities(entityType metadata.EntityType, name string, indexName string, criteria any) ([]indexItem.Key, error) {
-	index := entitysearch.Indexes[entityType][name][indexName]
+	index, ok := entitysearch.Indexes[entityType][name][indexName]
+	if !ok {
+		return nil, fmt.Errorf("no such index %q, entity: %q", indexName, name)
+	}
 
 	list, err := index.Searcher.Search(criteria)
 
@@ -68,17 +232,17 @@ func ReadEntityTypes(entityType metadata.EntityType) ([]string, error) {
 	return list, err
 }
 
-func ReadReference(refSpecs *metadata.ReferenceSpecs, reference string) (entity.ReferenceValue, error) {
+func ReadReference(refSpecs *metadata.ReferenceSpecs, reference string) (map[string]any, error) {
 	refEntity, err := ReadEntity(refSpecs.EntityType, refSpecs.Reference, reference)
 	if err != nil {
 		return nil, err
 	}
-	view := make([]any, 0)
+	view := make(map[string]any, 0)
 	for _, viewFieldName := range refSpecs.View {
-		view = append(view, refEntity.Attributes[viewFieldName])
+		view[viewFieldName] = refEntity.Attributes[viewFieldName]
 	}
 
-	return entity.ReferenceValue{refEntity.Identifier: view}, nil
+	return map[string]any{"reference": refEntity.Identifier, "type": refSpecs.EntityType.String(), "view": view}, nil
 }
 
 func FindSearchIndex(meta metadata.EntityMetadata, createria map[string]any) (*string, error) {
@@ -99,13 +263,13 @@ func FindSearchIndex(meta metadata.EntityMetadata, createria map[string]any) (*s
 	}
 
 	if indexName == nil {
-		return indexName, fmt.Errorf("no search index for defined criteria")
+		return indexName, fmt.Errorf("no search index for defined criteria. Entity: %s, Criteria: %v", meta.EntityName, createria)
 	}
 
 	return indexName, nil
 }
 
-func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (entity.ReferenceValue, error) {
+func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (map[string]any, error) {
 	refmeta, err := metaapi.ReadMetadata(refSpecs.EntityType, refSpecs.Reference)
 	if err != nil {
 		return nil, err
@@ -126,7 +290,7 @@ func FindReference(refSpecs metadata.ReferenceSpecs, createria map[string]any) (
 		return nil, err
 	}
 	if len(list) != 1 {
-		return nil, fmt.Errorf("search by reference should find only 1 record")
+		return nil, fmt.Errorf("search by reference should find only 1 record. entity: %s, criteria: %v", refSpecs.Reference, createria)
 	}
 
 	return ReadReference(&refSpecs, string(list[0]))
@@ -155,46 +319,6 @@ func RetrieveReferenceByEntityId(attribute metadata.StructedAttribute, entityId 
 		"view":      view,
 	}, nil
 }
-
-// func GenerateReferenceAttributeValueForTableColumn(meta *metadata.EntityMetadata, attribute string, columnName string, reference string) (map[string]any, error) {
-// 	if meta.Attributes[attribute]["type"] != "table" {
-// 		return nil, fmt.Errorf("attribute %q should be a table type", attribute)
-// 	}
-
-// 	columnMetadata, ok := meta.Attributes[attribute]["rows"].(map[string]interface{})
-// 	if !ok {
-// 		return nil, fmt.Errorf("attribute %q does not have column metadata", attribute)
-// 	}
-
-// 	columnType, ok := columnMetadata[columnName].(map[string]interface{})["type"].(string)
-// 	if !ok || columnType != "reference" {
-// 		return nil, fmt.Errorf("column %q of attribute %q should be a reference type", columnName, attribute)
-// 	}
-
-// 	columnMetadataMap := columnMetadata[columnName].(map[string]interface{})
-
-// 	viewFields := columnMetadataMap["view"]
-// 	refType := columnMetadataMap["referenceType"].(string)
-// 	referenceType, ok := metadata.EntityTypeMap[strings.ToLower(refType)]
-// 	if !ok {
-// 		return nil, fmt.Errorf("reference: %q, incorrect reference type: %q", columnMetadataMap["reference"].(string), refType)
-// 	}
-
-// 	refEntity, err := ReadEntity(referenceType, columnMetadataMap["reference"].(string), reference)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	view := make(map[string]interface{})
-// 	for _, viewFieldName := range viewFields.([]interface{}) {
-// 		view[viewFieldName.(string)] = refEntity.Attributes[viewFieldName.(string)]
-// 	}
-
-// 	return map[string]any{
-// 		"reference": reference,
-// 		"type":      "reference",
-// 		"view":      view,
-// 	}, nil
-// }
 
 func ReadReferences(metaSpecs *metadata.ReferenceSpecs) map[string]map[string]any {
 	entities, err := ReadEntities(metaSpecs.EntityType, metaSpecs.Reference)

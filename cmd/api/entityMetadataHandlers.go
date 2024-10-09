@@ -1,17 +1,25 @@
 package main
 
 import (
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/deployer"
+	global "github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 	metaapi "github.com/ukubenet/metadata-repository/metadata/api"
 )
 
 func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
@@ -34,6 +42,10 @@ func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 
 func (app *application) getMetadataList(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	entityType := params.ByName("type")
 
 	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
@@ -59,6 +71,10 @@ func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Requ
 
 func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	name := params.ByName("name")
 	entityType := params.ByName("type")
 
@@ -93,6 +109,10 @@ func (app *application) deleteMetadata(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
 	entityType := params.ByName("type")
 
 	entityMetadata := new(metadata.EntityMetadata)
@@ -110,10 +130,27 @@ func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if entType == metadata.Event {
+		if _, ok := entityMetadata.Attributes["EventTime"]; !ok {
+			entityMetadata.Attributes["EventTime"] = metadata.Attribute{
+				"type": "dateTime",
+			}
+		}
+	}
+
 	err = metaapi.PutMetadata(entType, entityMetadata)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	if entityType == "event" {
+		path, _ := os.Getwd()
+		tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + strings.ToLower(entityMetadata.EntityName) + "_transaction.tmpl"
+		err = ioutil.WriteFile(tmplFile, []byte(entityMetadata.CustomTemplate), 0644)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadRequest)
+		}
 	}
 
 	deployerFactory := deployer.CreateFactory(entType)

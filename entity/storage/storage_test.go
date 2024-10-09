@@ -5,11 +5,13 @@ import (
 
 	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/entity"
+	"github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 func TestMain(m *testing.M) {
 	config.LoadConfig("../../config", "test")
+	global.SetAppName("test")
 	m.Run()
 }
 

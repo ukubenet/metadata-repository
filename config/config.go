@@ -7,13 +7,15 @@ import (
 type (
 	AppConfig struct {
 		Deployer struct {
-			Adapter string `yaml:"adapter"`
-			Path    string `yaml:"path"`
+			Adapter       string `yaml:"adapter"`
+			Path          string `yaml:"path"`
+			Entitysubpath string `yaml:"entitysubpath"`
 		} `yaml:"deployer"`
 		Metadata struct {
-			Adapter  string `yaml:"metadata"`
-			Path     string `yaml:"path"`
-			Tmplpath string `yaml:"tmplpath"`
+			Adapter     string `yaml:"metadata"`
+			Path        string `yaml:"path"`
+			Metasubpath string `yaml:"metasubpath"`
+			Tmplsubpath string `yaml:"tmplsubpath"`
 		} `yaml:"metadata"`
 	}
 )
