@@ -8,3 +8,6 @@ metadata:
     path: /../../../data
     metasubpath: metadata/json
     tmplsubpath: metadata/tmpl
+
+frontend:
+    adapter: svelte
