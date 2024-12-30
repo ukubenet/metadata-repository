@@ -8,7 +8,7 @@ import (
 
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
-	router.ServeFiles("/static/*filepath",http.Dir("static"))
+	router.ServeFiles("/static/*filepath", http.Dir("static"))
 
 	router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
 
@@ -53,6 +53,16 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/app/run/:app", app.appRun)
 	router.HandlerFunc(http.MethodGet, "/v1/", app.listApps)
 	router.HandlerFunc(http.MethodPost, "/v1/app/chatgpt", app.postAppChatGPT)
+
+	// CRUD - API app
+	router.HandlerFunc(http.MethodGet, "/v1/api/app/duplicate/:app", app.apiDuplicateApp)
+	router.HandlerFunc(http.MethodPut, "/v1/api/app/:app", app.apiPostApp)
+	router.HandlerFunc(http.MethodPut, "/v1/api/app/", app.apiPostNewApp)
+	router.HandlerFunc(http.MethodDelete, "/v1/api/app/:app", app.apiDeleteApp)
+	// router.HandlerFunc(http.MethodGet, "/v1/api/app/config/:app", app.apiAppConfiguration)
+	router.HandlerFunc(http.MethodGet, "/v1/api/app/run/:app", app.apiRunApp)
+	router.HandlerFunc(http.MethodGet, "/v1/api/app", app.apiListApps)
+	// router.HandlerFunc(http.MethodPost, "/v1/app/chatgpt", app.postAppChatGPT)
 
 	return app.enableCORS(router)
 }
