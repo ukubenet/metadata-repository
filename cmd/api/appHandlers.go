@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"os"
+	"encoding/json"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/config"
@@ -93,34 +94,41 @@ func (app *application) apiDuplicateApp(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) apiPostNewApp(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	newAppName := r.FormValue("AppName")
+	// Parse the JSON request body
+	var requestData struct {
+		Name  string `json:"name"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
+
 
 	// todo: should be an adapter to create app
 	path, _ := os.Getwd()
-	appPath := path + "/" + config.Config.Metadata.Path + "/" + newAppName
-	if newAppName != "" {
-		subfolders := []string{config.Config.Metadata.Metasubpath, config.Config.Deployer.Entitysubpath}
+	appPath := path + "/" + config.Config.Metadata.Path + "/" + requestData.Name
 
-		// Create the app folder
-		err := os.Mkdir(appPath, 0755)
+	subfolders := []string{config.Config.Metadata.Metasubpath, config.Config.Deployer.Entitysubpath}
+
+	// Create the app folder
+	err = os.Mkdir(appPath, 0755)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Create the metadata and entity subfolders.
+	for _, subfolder := range subfolders {
+		path := appPath + "/" + subfolder
+		err := os.MkdirAll(path, 0755)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
-		// Create the metadata and entity subfolders.
-		for _, subfolder := range subfolders {
-			path := appPath + "/" + subfolder
-			err := os.MkdirAll(path, 0755)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		}
 	}
 
-	http.Redirect(w, r, "/v1/", http.StatusSeeOther)
+	w.WriteHeader(http.StatusCreated)
 }
 
 // func (app *application) postAppChatGPT(w http.ResponseWriter, r *http.Request) {
