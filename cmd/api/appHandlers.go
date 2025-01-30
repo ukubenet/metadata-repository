@@ -57,15 +57,22 @@ func (app *application) apiPostApp(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	appName := params.ByName("app")
-
-	r.ParseForm()
-	newAppName := r.FormValue("AppName")
+	
+	// Parse the JSON request body
+	var requestData struct {
+		Name  string `json:"newAppName"`
+	}
+	err := json.NewDecoder(r.Body).Decode(&requestData)
+	if err != nil {
+		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		return
+	}
 
 	// todo: should be adapter to rename app
 	path, _ := os.Getwd()
 	appPath := path + "/" + config.Config.Metadata.Path
-	if newAppName != "" && appName != newAppName {
-		err := os.Rename(appPath+"/"+appName, appPath+"/"+newAppName)
+	if requestData.Name != "" && appName != requestData.Name {
+		err := os.Rename(appPath+"/"+appName, appPath+"/"+requestData.Name)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
