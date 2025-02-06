@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"os"
-	"encoding/json"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/config"
@@ -57,10 +57,10 @@ func (app *application) apiPostApp(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
 	appName := params.ByName("app")
-	
+
 	// Parse the JSON request body
 	var requestData struct {
-		Name  string `json:"newAppName"`
+		Name string `json:"name"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
@@ -103,14 +103,13 @@ func (app *application) apiDuplicateApp(w http.ResponseWriter, r *http.Request) 
 func (app *application) apiPostNewApp(w http.ResponseWriter, r *http.Request) {
 	// Parse the JSON request body
 	var requestData struct {
-		Name  string `json:"name"`
+		Name string `json:"name"`
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestData)
 	if err != nil {
 		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
 		return
 	}
-
 
 	// todo: should be an adapter to create app
 	path, _ := os.Getwd()
