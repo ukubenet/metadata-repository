@@ -125,9 +125,11 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventTime, ok := e.Attributes["EventTime"].(time.Time)
-	if !ok || eventTime.IsZero() {
-		e.Attributes["EventTime"] = time.Now().Format("2006-01-02 15:04:05")
+	if entType == metadata.Event {
+		eventTime, ok := e.Attributes["EventTime"].(time.Time)
+		if !ok || eventTime.IsZero() {
+			e.Attributes["EventTime"] = time.Now().Format("2006-01-02 15:04:05")
+		}
 	}
 
 	err = entityapi.PutEntity(entType, e)
