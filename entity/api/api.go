@@ -22,7 +22,7 @@ func ReadEntity(entityType metadata.EntityType, name string, identifier string) 
 func DeleteEventTransactions(e *entity.Entity) error {
 
 	if len(e.Transactions) == 0 {
-		return errors.New("event transactions not defined")
+		return nil // @todo we need to restore when we set transactions for events  errors.New("event transactions not defined")
 	}
 
 	for balanceName, balanceSpecs := range e.Transactions {
@@ -52,7 +52,7 @@ func DeleteEventTransactions(e *entity.Entity) error {
 func PostEventTransactions(e *entity.Entity) error {
 
 	if len(e.Transactions) == 0 {
-		return errors.New("event transactions not defined")
+		return nil // @todo restore it errors.New("event transactions not defined")
 	}
 
 	for balanceName, balanceSpecs := range e.Transactions {
