@@ -1,13 +1,10 @@
 package main
 
 import (
-	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/ukubenet/metadata-repository/config"
 	"github.com/ukubenet/metadata-repository/deployer"
 	global "github.com/ukubenet/metadata-repository/global"
 	"github.com/ukubenet/metadata-repository/metadata"
@@ -144,14 +141,14 @@ func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if entityType == "event" {
-		path, _ := os.Getwd()
-		tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + strings.ToLower(entityMetadata.EntityName) + "_transaction.tmpl"
-		err = ioutil.WriteFile(tmplFile, []byte(entityMetadata.CustomTemplate), 0644)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadRequest)
-		}
-	}
+	// if entityType == "event" {
+	// 	path, _ := os.Getwd()
+	// 	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + strings.ToLower(entityMetadata.EntityName) + "_transaction.tmpl"
+	// 	err = ioutil.WriteFile(tmplFile, []byte(entityMetadata.CustomTemplate), 0644)
+	// 	if err != nil {
+	// 		http.Error(rw, err.Error(), http.StatusBadRequest)
+	// 	}
+	// }
 
 	deployerFactory := deployer.CreateFactory(entType)
 	adapter := deployerFactory.CreateAdapter()
@@ -162,4 +159,54 @@ func (app *application) putMetadata(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	rw.WriteHeader(http.StatusCreated)
+}
+
+func (app *application) copyMetadata(rw http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	appName := params.ByName("app")
+	global.SetAppName(appName)
+
+	name := params.ByName("name")
+	entityType := params.ByName("type")
+
+	entType, ok := metadata.EntityTypeMap[strings.ToLower(entityType)]
+	if !ok {
+		http.Error(rw, "incorrect entity type: "+entityType, http.StatusBadRequest)
+		return
+	}
+
+	entityMetadata, err := metaapi.ReadMetadata(entType, name)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	entityMetadata.EntityName = entityMetadata.EntityName + "_copy"
+
+	err = metaapi.PutMetadata(entType, entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// if entityType == "event" {
+	// 	path, _ := os.Getwd()
+	// 	tmplFile := path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Tmplsubpath + "/" + strings.ToLower(entityMetadata.EntityName) + "_transaction.tmpl"
+	// 	err = ioutil.WriteFile(tmplFile, []byte(entityMetadata.CustomTemplate), 0644)
+	// 	if err != nil {
+	// 		http.Error(rw, err.Error(), http.StatusBadRequest)
+	// 	}
+	// }
+
+	deployerFactory := deployer.CreateFactory(entType)
+	adapter := deployerFactory.CreateAdapter()
+	err = adapter.Deploy(entityMetadata)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	rw.WriteHeader(http.StatusCreated)
+
 }
