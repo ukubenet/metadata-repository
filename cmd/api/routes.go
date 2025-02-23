@@ -14,6 +14,7 @@ func (app *application) routes() http.Handler {
 
 	// Rest API - metadata
 	router.HandlerFunc(http.MethodGet, "/v1/metadata/api/get/:app/:type/:name", app.getMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/metadata/api/copy/:app/:type/:name", app.copyMetadata)
 	router.HandlerFunc(http.MethodGet, "/v1/metadata/api/list/:app/:type", app.getMetadataList)
 	router.HandlerFunc(http.MethodPut, "/v1/metadata/api/:app/:type", app.putMetadata)
 	router.HandlerFunc(http.MethodDelete, "/v1/metadata/api/:app/:type/:name", app.deleteMetadata)
