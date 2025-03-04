@@ -33,7 +33,7 @@ func (app *application) getMetadata(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	parcel := getParcel(rw, r)
-	parcel.Encode(http.StatusFound, entity)
+	parcel.Encode(http.StatusOK, entity)
 
 }
 
