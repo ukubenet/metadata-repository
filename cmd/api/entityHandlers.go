@@ -3,7 +3,6 @@ package main
 import (
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/ukubenet/metadata-repository/entity"
@@ -123,13 +122,6 @@ func (app *application) putEntity(rw http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadRequest)
 		return
-	}
-
-	if entType == metadata.Event {
-		eventTime, ok := e.Attributes["EventTime"].(time.Time)
-		if !ok || eventTime.IsZero() {
-			e.Attributes["EventTime"] = time.Now().Format("2006-01-02 15:04:05")
-		}
 	}
 
 	err = entityapi.PutEntity(entType, e)
