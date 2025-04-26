@@ -17,9 +17,17 @@ func get_path() string {
 }
 
 func getAdapter(e metadata.EntityType) interface{} {
-	if config.Config.Metadata.Adapter == JSON {
+		if config.Config.Metadata.Adapter == JSON {
 		return adapter.Local(get_path() + "/" + e.String() + "/")
 	} else {
 		panic("Undefined deployer adapter!")
 	}
+}
+
+func getRegisterAdapter(e metadata.RegisterType) interface{} {
+	if config.Config.Metadata.Adapter == JSON {
+	return adapter.Local(get_path() + "/register/" + e.String() + "/")
+} else {
+	panic("Undefined deployer register adapter!")
+}
 }

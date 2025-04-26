@@ -1,0 +1,1 @@
+{"RegisterName":"test/RegisterTest","Dimensions":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}},"Fact":{"number_fact":{"type":"number"}},"Source":{"view":["string_attribute"],"entityType":1,"reference":"test/Test"},"Granularity":0}

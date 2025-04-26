@@ -2,8 +2,6 @@
 package deployer
 
 import (
-	"errors"
-
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
@@ -11,6 +9,8 @@ type (
 	Deployer interface {
 		Deploy(*metadata.EntityMetadata) error
 		Delete(*metadata.EntityMetadata) error
+		RegisterDeploy(*metadata.RegisterMetadata) error
+		RegisterDelete(*metadata.RegisterMetadata) error
 	}
 
 	Adapter struct {
@@ -63,6 +63,24 @@ func (p *Adapter) Delete(entitymeta *metadata.EntityMetadata) (err error) {
 	return
 }
 
+func (p *Adapter) RegisterDeploy(registermeta *metadata.RegisterMetadata) (err error) {
+	deployer := p.factory.deployer
+	if err = deployer.RegisterDeploy(registermeta); err != nil {
+		return
+	}
+
+	return
+}
+
+func (p *Adapter) RegisterDelete(registermeta *metadata.RegisterMetadata) (err error) {
+	deployer := p.factory.deployer
+	if err = deployer.RegisterDelete(registermeta); err != nil {
+		return
+	}
+
+	return
+}
+
 func CreateFactory(e metadata.EntityType) *Factory {
 	factory := NewFactory()
 	factory.Use(getAdapter(e))
@@ -70,28 +88,35 @@ func CreateFactory(e metadata.EntityType) *Factory {
 	return factory
 }
 
-func DeployMetadata(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
-	if entitymeta.EntityName == "" {
-		return errors.New("entity name not defined")
-	}
+func CreateRegisterFactory(e metadata.RegisterType) *Factory {
+	factory := NewFactory()
+	factory.Use(getRegisterAdapter(e))
 
-	entity := new(metadata.EntityMetadata)
-	dbReader := CreateFactory(entityType)
-	adapter := dbReader.CreateAdapter()
-	err := adapter.Deploy(entity)
-
-	return err
+	return factory
 }
 
-func Delete(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
-	if entitymeta.EntityName == "" {
-		return errors.New("entity name not defined")
-	}
+// func DeployMetadata(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
+// 	if entitymeta.EntityName == "" {
+// 		return errors.New("entity name not defined")
+// 	}
 
-	entity := new(metadata.EntityMetadata)
-	dbReader := CreateFactory(entityType)
-	adapter := dbReader.CreateAdapter()
-	err := adapter.Deploy(entity)
+// 	entity := new(metadata.EntityMetadata)
+// 	dbReader := CreateFactory(entityType)
+// 	adapter := dbReader.CreateAdapter()
+// 	err := adapter.Deploy(entity)
 
-	return err
-}
+// 	return err
+// }
+
+// func Delete(entitymeta *metadata.EntityMetadata, entityType metadata.EntityType) error {
+// 	if entitymeta.EntityName == "" {
+// 		return errors.New("entity name not defined")
+// 	}
+
+// 	entity := new(metadata.EntityMetadata)
+// 	dbReader := CreateFactory(entityType)
+// 	adapter := dbReader.CreateAdapter()
+// 	err := adapter.Deploy(entity)
+
+// 	return err
+// }

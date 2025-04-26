@@ -3,9 +3,7 @@ package entityapi
 import (
 	"errors"
 	"fmt"
-	"strconv"
 
-	"github.com/google/uuid"
 	"github.com/ukubenet/metadata-repository/entity"
 	entitysearch "github.com/ukubenet/metadata-repository/entity/search"
 	indexItem "github.com/ukubenet/metadata-repository/entity/search/item"
@@ -19,148 +17,148 @@ func ReadEntity(entityType metadata.EntityType, name string, identifier string) 
 	return storage.ReadEntity(entityType, name, identifier)
 }
 
-func DeleteEventTransactions(e *entity.Entity) error {
+// func DeleteEventTransactions(e *entity.Entity) error {
 
-	if len(e.Transactions) == 0 {
-		return nil // @todo we need to restore when we set transactions for events  errors.New("event transactions not defined")
-	}
+// 	if len(e.Transactions) == 0 {
+// 		return nil // @todo we need to restore when we set transactions for events  errors.New("event transactions not defined")
+// 	}
 
-	for balanceName, balanceSpecs := range e.Transactions {
-		balanceMap := balanceSpecs.(map[string]any)
+// 	for balanceName, balanceSpecs := range e.Transactions {
+// 		balanceMap := balanceSpecs.(map[string]any)
 
-		newChangeString, ok := balanceMap["new_change"].(string)
-		if !ok {
-			return errors.New("new_change not defined. Balance name: " + balanceName)
-		}
+// 		newChangeString, ok := balanceMap["new_change"].(string)
+// 		if !ok {
+// 			return errors.New("new_change not defined. Balance name: " + balanceName)
+// 		}
 
-		newChange, err := strconv.ParseFloat(newChangeString, 64)
-		if err != nil {
-			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
-		}
+// 		newChange, err := strconv.ParseFloat(newChangeString, 64)
+// 		if err != nil {
+// 			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
+// 		}
 
-		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
-		if !ok {
-			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
-		}
+// 		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
+// 		if !ok {
+// 			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
+// 		}
 
-		updateBalance(balanceName, newEntityReference, -newChange)
-	}
+// 		updateBalance(balanceName, newEntityReference, -newChange)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func PostEventTransactions(e *entity.Entity) error {
+// func PostEventTransactions(e *entity.Entity) error {
 
-	if len(e.Transactions) == 0 {
-		return nil // @todo restore it errors.New("event transactions not defined")
-	}
+// 	if len(e.Transactions) == 0 {
+// 		return nil // @todo restore it errors.New("event transactions not defined")
+// 	}
 
-	for balanceName, balanceSpecs := range e.Transactions {
-		balanceMap := balanceSpecs.(map[string]any)
+// 	for balanceName, balanceSpecs := range e.Transactions {
+// 		balanceMap := balanceSpecs.(map[string]any)
 
-		var oldChange float64
-		oldChangeString, ok := balanceMap["old_change"].(string)
-		if ok {
-			var err error
-			oldChange, err = strconv.ParseFloat(oldChangeString, 64)
-			if err != nil {
-				oldChange = 0
-			}
-		} else {
-			oldChange = 0
-		}
+// 		var oldChange float64
+// 		oldChangeString, ok := balanceMap["old_change"].(string)
+// 		if ok {
+// 			var err error
+// 			oldChange, err = strconv.ParseFloat(oldChangeString, 64)
+// 			if err != nil {
+// 				oldChange = 0
+// 			}
+// 		} else {
+// 			oldChange = 0
+// 		}
 
-		newChangeString, ok := balanceMap["new_change"].(string)
-		if !ok {
-			return errors.New("new_change not defined. Balance name: " + balanceName)
-		}
+// 		newChangeString, ok := balanceMap["new_change"].(string)
+// 		if !ok {
+// 			return errors.New("new_change not defined. Balance name: " + balanceName)
+// 		}
 
-		newChange, err := strconv.ParseFloat(newChangeString, 64)
-		if err != nil {
-			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
-		}
+// 		newChange, err := strconv.ParseFloat(newChangeString, 64)
+// 		if err != nil {
+// 			return fmt.Errorf("invalid new_change value for balance name: %s", balanceName)
+// 		}
 
-		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
-		if !ok {
-			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
-		}
+// 		newEntityReference, ok := balanceMap["new_entity_reference"].(string)
+// 		if !ok {
+// 			return errors.New("new_entity_reference not defined. Balance name: " + balanceName)
+// 		}
 
-		oldEntityReference, ok := balanceMap["old_entity_reference"].(string)
-		if ok {
-			updateBalance(balanceName, oldEntityReference, -oldChange)
-		}
+// 		oldEntityReference, ok := balanceMap["old_entity_reference"].(string)
+// 		if ok {
+// 			updateBalance(balanceName, oldEntityReference, -oldChange)
+// 		}
 
-		updateBalance(balanceName, newEntityReference, newChange)
-	}
+// 		updateBalance(balanceName, newEntityReference, newChange)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-func updateBalance(balanceName string, entityReference string, change float64) error {
-	if change == 0 {
-		return nil
-	}
+// func updateBalance(balanceName string, entityReference string, change float64) error {
+// 	if change == 0 {
+// 		return nil
+// 	}
 
-	balanceEntities, err := ReadEntities(metadata.Balance, balanceName)
-	if err != nil {
-		return fmt.Errorf("balance reference not found: Balance name: %s, Error: %v", balanceName, err)
-	}
+// 	balanceEntities, err := ReadEntities(metadata.Balance, balanceName)
+// 	if err != nil {
+// 		return fmt.Errorf("balance reference not found: Balance name: %s, Error: %v", balanceName, err)
+// 	}
 
-	foundBalanceEntity := entity.Entity{}
-	for _, balanceEntity := range balanceEntities {
-		if balanceEntity.Attributes[balanceName].(map[string]any)["reference"].(string) == entityReference {
-			foundBalanceEntity = balanceEntity
+// 	foundBalanceEntity := entity.Entity{}
+// 	for _, balanceEntity := range balanceEntities {
+// 		if balanceEntity.Attributes[balanceName].(map[string]any)["reference"].(string) == entityReference {
+// 			foundBalanceEntity = balanceEntity
 
-		}
-	}
-	if foundBalanceEntity.Identifier != "" {
-		balanceString, ok := foundBalanceEntity.Attributes["balance"].(string)
-		if !ok {
-			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
-		}
-		balance, err := strconv.ParseFloat(balanceString, 64)
-		if err != nil {
-			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
-		}
-		balance += change
-		foundBalanceEntity.Attributes["balance"] = strconv.FormatFloat(balance, 'f', -1, 64)
+// 		}
+// 	}
+// 	if foundBalanceEntity.Identifier != "" {
+// 		balanceString, ok := foundBalanceEntity.Attributes["balance"].(string)
+// 		if !ok {
+// 			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
+// 		}
+// 		balance, err := strconv.ParseFloat(balanceString, 64)
+// 		if err != nil {
+// 			return fmt.Errorf("invalid balance value for balance name: %s", balanceName)
+// 		}
+// 		balance += change
+// 		foundBalanceEntity.Attributes["balance"] = strconv.FormatFloat(balance, 'f', -1, 64)
 
-		err = PutEntity(metadata.Balance, &foundBalanceEntity)
-		if err != nil {
-			return err
-		}
-	} else {
-		balanceEntity := &entity.Entity{
-			EntityName: balanceName,
-			Identifier: uuid.New().String(),
-			Attributes: make(map[string]interface{}),
-		}
+// 		err = PutEntity(metadata.Balance, &foundBalanceEntity)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	} else {
+// 		balanceEntity := &entity.Entity{
+// 			EntityName: balanceName,
+// 			Identifier: uuid.New().String(),
+// 			Attributes: make(map[string]interface{}),
+// 		}
 
-		meta, err := metaapi.ReadMetadata(metadata.Balance, balanceName)
-		if err != nil {
-			return err
-		}
-		metaAttributes := meta.GetStructedAttributes()
-		for key := range metaAttributes {
-			if metaAttributes[key].Type == metadata.ReferenceType {
-				refValue, err := RetrieveReferenceByEntityId(metaAttributes[key], entityReference)
-				if err != nil {
-					return err
-				}
-				balanceEntity.Attributes[key] = refValue
-			} else {
-				balanceEntity.Attributes["balance"] = strconv.FormatFloat(change, 'f', -1, 64)
-			}
-		}
+// 		meta, err := metaapi.ReadMetadata(metadata.Balance, balanceName)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		metaAttributes := meta.GetStructedAttributes()
+// 		for key := range metaAttributes {
+// 			if metaAttributes[key].Type == metadata.ReferenceType {
+// 				refValue, err := RetrieveReferenceByEntityId(metaAttributes[key], entityReference)
+// 				if err != nil {
+// 					return err
+// 				}
+// 				balanceEntity.Attributes[key] = refValue
+// 			} else {
+// 				balanceEntity.Attributes["balance"] = strconv.FormatFloat(change, 'f', -1, 64)
+// 			}
+// 		}
 
-		err = PutEntity(metadata.Balance, balanceEntity)
-		if err != nil {
-			return err
-		}
-	}
+// 		err = PutEntity(metadata.Balance, balanceEntity)
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func PutEntity(entityType metadata.EntityType, entity *entity.Entity) error {
 
@@ -177,12 +175,12 @@ func PutEntity(entityType metadata.EntityType, entity *entity.Entity) error {
 		return err
 	}
 
-	if entityType == metadata.Event {
-		err := PostEventTransactions(entity)
-		if err != nil {
-			return err
-		}
-	}
+	// if entityType == metadata.Event {
+	// 	err := PostEventTransactions(entity)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	factoryWriter := storage.CreateFactory()
 	adapter := factoryWriter.CreateAdapter()
@@ -195,13 +193,13 @@ func DeleteEntity(entityType metadata.EntityType, name string, identifier string
 	storage := storage.CreateFactory()
 	adapter := storage.CreateAdapter()
 
-	if entityType == metadata.Event {
-		entity, _ := ReadEntity(entityType, name, identifier)
-		err := DeleteEventTransactions(entity)
-		if err != nil {
-			return err
-		}
-	}
+	// if entityType == metadata.Event {
+	// 	entity, _ := ReadEntity(entityType, name, identifier)
+	// 	err := DeleteEventTransactions(entity)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// }
 
 	err := adapter.Delete(entityType, name, identifier)
 
