@@ -72,7 +72,7 @@ func (app *application) editMetadata(w http.ResponseWriter, r *http.Request) {
 		"catalog": readEntityTypeAttibutes(metadata.Catalog),
 		"event":   readEntityTypeAttibutes(metadata.Event),
 	}
-	balances := readEntityTypeAttibutes(metadata.Balance)
+	// balances := readEntityTypeAttibutes(metadata.Balance)
 
 	var customTemplate = ""
 	if entityType == "event" {
@@ -98,7 +98,7 @@ func (app *application) editMetadata(w http.ResponseWriter, r *http.Request) {
 		entity,
 		metadata.AttributeTypeList,
 		references,
-		balances,
+		nil, //balances,
 		customTemplate,
 	}
 
@@ -144,11 +144,11 @@ func (app *application) appConfiguration(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	balances, err := metaapi.ReadMetadataList(metadata.Balance)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// balances, err := metaapi.ReadMetadataList(metadata.Balance)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
 	tmplData := struct {
 		AppName  string
@@ -159,7 +159,7 @@ func (app *application) appConfiguration(w http.ResponseWriter, r *http.Request)
 		appName,
 		catalogs,
 		events,
-		balances,
+		nil, //balances,
 	}
 	executeAppTemplate(w, "config", tmplData)
 }

@@ -1,5 +1,35 @@
 package metadata
 
+import "time"
+
+type RegisterType int
+
+const (
+	State       RegisterType = 1
+	Balance     RegisterType = 2
+	Accumulator RegisterType = 3
+)
+
+func (e RegisterType) String() string {
+	return [...]string{"state", "balance", "accumulator"}[e-1]
+}
+
+var (
+	RegisterTypeMap = map[string]RegisterType{
+		"state":       State,
+		"balance":     Balance,
+		"accumulator": Accumulator,
+	}
+)
+
+type RegisterMetadata struct {
+	RegisterName string
+	Dimensions   Attributes
+	Fact         Attribute
+	Source       ReferenceSpecs
+	Granularity  time.Duration
+}
+
 const IntegerType = "integer"
 const NumberType = "number"
 const StringType = "string"
@@ -13,7 +43,6 @@ type EntityType int
 const (
 	Catalog EntityType = 1
 	Event   EntityType = 2
-	Balance EntityType = 3
 )
 
 func (e EntityType) String() string {
@@ -24,7 +53,6 @@ var (
 	EntityTypeMap = map[string]EntityType{
 		"catalog": Catalog,
 		"event":   Event,
-		"balance": Balance,
 	}
 )
 
@@ -44,6 +72,7 @@ type EntityMetadata struct {
 	Attributes     Attributes       `json:"attributes"`
 	Transactions   Attributes       `json:"transactions"`
 	CustomTemplate string           `json:"customTemplate"`
+	Prossesor      string           `json:"processor"`
 }
 
 type Attributes map[string]Attribute

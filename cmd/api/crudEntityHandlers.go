@@ -209,11 +209,11 @@ func (app *application) appRun(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	balances, err := metaapi.ReadMetadataList(metadata.Balance)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	// balances, err := metaapi.ReadMetadataList(metadata.Balance)
+	// if err != nil {
+	// 	http.Error(w, err.Error(), http.StatusBadRequest)
+	// 	return
+	// }
 
 	tmplData := struct {
 		AppName  string
@@ -224,7 +224,7 @@ func (app *application) appRun(w http.ResponseWriter, r *http.Request) {
 		appName,
 		catalogs,
 		events,
-		balances,
+		nil, //balances,
 	}
 	executeAppTemplate(w, "run", tmplData)
 }

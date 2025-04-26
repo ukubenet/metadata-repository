@@ -20,6 +20,7 @@ func Local(path string) *LocalDeployer {
 
 func (local *LocalDeployer) Deploy(entitymeta *metadata.EntityMetadata) (err error) {
 
+	// @todo check if no bug here. We need to create entity type directory if not exist.
 	dir := local.path + entitymeta.EntityName
 	if e := os.MkdirAll(dir, 0755); !os.IsExist(e) {
 		fi, _ := os.Stat(dir)
@@ -32,7 +33,7 @@ func (local *LocalDeployer) Deploy(entitymeta *metadata.EntityMetadata) (err err
 }
 
 func (local *LocalDeployer) Delete(entitymeta *metadata.EntityMetadata) (err error) {
-
+	// @todo check if no bug here. We need to create entity type directory if not exist.
 	dir := local.path + entitymeta.EntityName
 	if err := os.RemoveAll(dir); err != nil {
 		return err

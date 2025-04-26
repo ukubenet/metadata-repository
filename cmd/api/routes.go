@@ -21,6 +21,12 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/attribute-types", app.getAllAttributeTypes)
 
+	router.HandlerFunc(http.MethodGet, "/v1/register_metadata/api/get/:app/:type/:name", app.getRegisterMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/register_metadata/api/copy/:app/:type/:name", app.copyRegisterMetadata)
+	router.HandlerFunc(http.MethodGet, "/v1/register_metadata/api/list/:app/:type", app.getRegisterMetadataList)
+	router.HandlerFunc(http.MethodPut, "/v1/register_metadata/api/:app/:type", app.putRegisterMetadata)
+	router.HandlerFunc(http.MethodDelete, "/v1/register_metadata/api/:app/:type/:name", app.deleteRegisterMetadata)
+
 	// CRUD - metadata
 	router.HandlerFunc(http.MethodGet, "/v1/metadata/edit/:app/:type/:name", app.editMetadata)
 	router.HandlerFunc(http.MethodGet, "/v1/metadata/new/:app/:type", app.newMetadata)
