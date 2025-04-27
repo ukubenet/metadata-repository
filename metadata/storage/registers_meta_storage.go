@@ -167,9 +167,9 @@ func PutRegisterMetadata(registerType metadata.RegisterType, registermeta *metad
 	if len(registermeta.Fact) == 0 {
 		return errors.New("register fact not defined")
 	}
-	if registermeta.Source.Reference == "" {
-		return errors.New("register source not defined")
-	}
+	// if registermeta.Source.Reference == "" {
+	// 	return errors.New("register source not defined")
+	// }
 
 
 	factoryWriter := CreateRegisterFactory(registerType)

@@ -37,17 +37,11 @@ func TestJsonRegisterReplacer(t *testing.T) {
 	var fact metadata.Attribute = metadata.Attribute{
 		"number_fact": map[string]any{"type": "number"},
 	}
-	var source metadata.ReferenceSpecs = metadata.ReferenceSpecs{
-		Reference: "test/Test",
-		EntityType:     metadata.Catalog,
-		View:     []string{"string_attribute"},
-	}
 
 	var candidate *metadata.RegisterMetadata = &metadata.RegisterMetadata{
 		RegisterName: "test/RegisterTest",
 		Dimensions:  dimensions,
 		Fact:        fact,
-		Source:      source,
 	}
 
 	inserter.RegisterPut(candidate)
