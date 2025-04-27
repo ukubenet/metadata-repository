@@ -1,7 +1,5 @@
 package metadata
 
-import "time"
-
 type RegisterType int
 
 const (
@@ -22,12 +20,43 @@ var (
 	}
 )
 
+type GranularityType int
+
+const (
+	Minute  GranularityType = 0
+	Hour    GranularityType = 1
+	Day     GranularityType = 2
+	Week    GranularityType = 3
+	BiWeek  GranularityType = 4
+	Month   GranularityType = 5
+	Quarter GranularityType = 6
+	Year    GranularityType = 7
+	Current GranularityType = 8
+)
+
+func (e GranularityType) String() string {
+	return [...]string{"minute", "hour", "day", "week", "biweek", "month", "quarter", "year", "current"}[e]
+}
+
+var (
+	GranularityTypeMap = map[string]GranularityType{
+		"minute":  Minute,
+		"hour":    Hour,
+		"day":     Day,
+		"week":    Week,
+		"biweek":  BiWeek,
+		"month":   Month,
+		"quarter": Quarter,
+		"year":    Year,
+		"current": Current,
+	}
+)
+
 type RegisterMetadata struct {
-	RegisterName string
-	Dimensions   Attributes
-	Fact         Attribute
-	Source       ReferenceSpecs
-	Granularity  time.Duration
+	RegisterName string          `json:"registerName"`
+	Dimensions   Attributes      `json:"dimensions"`
+	Fact         Attribute       `json:"fact"`
+	Granularity  GranularityType `json:"granularity"`
 }
 
 const IntegerType = "integer"

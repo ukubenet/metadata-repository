@@ -1,1 +1,1 @@
-{"RegisterName":"","Dimensions":null,"Fact":null,"Source":{"view":null,"entityType":0,"reference":""},"Granularity":0}
+{"register_name":"","dimensions":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}},"fact":{"number_fact":{"type":"number"}},"Granularity":0}
