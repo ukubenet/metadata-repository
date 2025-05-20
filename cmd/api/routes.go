@@ -41,6 +41,11 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/types/:type/", app.getAllEntityTypes)
 
+	router.HandlerFunc(http.MethodGet, "/v1/event/:app/:event/:identifier", app.readEventRegisters)
+	router.HandlerFunc(http.MethodPut, "/v1/event/:app/:event/:identifier", app.commitEvent)
+	router.HandlerFunc(http.MethodDelete, "/v1/event/:app/:event/:identifier", app.rollbackEvent)
+	router.HandlerFunc(http.MethodPost, "/v1/event/:app/:type/:register/:timestamp", app.readState)
+
 	// CRUD - entity
 	router.HandlerFunc(http.MethodGet, "/v1/edit/:app/:type/:name/:identifier", app.editEntity)
 	router.HandlerFunc(http.MethodGet, "/v1/new/:app/:type/:name", app.newEntity)

@@ -13,6 +13,24 @@ import (
 	metavalidator "github.com/ukubenet/metadata-repository/metadata/validator"
 )
 
+func ValidateRegisterValues(registerType metadata.RegisterType, register *entity.Register) (err error) {
+	meta, err := metaapi.ReadRegisterMetadata(registerType, register.RegisterName)
+	if err != nil {
+		return fmt.Errorf("error reading meta of entity %q", register.RegisterName)
+	}
+
+	if err = validateValues(register.Dimensions, meta.Dimensions); err != nil {
+		return err
+	}
+
+	err = validateAttributeValue(register.RegisterName + ".fact", register.Fact, meta.Fact)
+	if err != nil {
+		return err
+	}
+
+	return
+}
+
 func ValidateAttributeValues(entityType metadata.EntityType, entity string, values entity.AttributeValues) (err error) {
 	meta, err := metaapi.ReadMetadata(entityType, entity)
 	if err != nil {
