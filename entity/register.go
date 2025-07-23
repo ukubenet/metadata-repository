@@ -11,10 +11,9 @@ type Register struct {
 	RegisterType metadata.RegisterType `json:"registerType"`
 	Timestamp    time.Time             `json:"timestamp"`
 	Dimensions   AttributeValues       `json:"dimensions"`
-	Fact         any                   `json:"fact"`
+	Facts        AttributeValues       `json:"facts"`
+	Auxiliaries  AttributeValues       `json:"auxiliaries"`
 	Source       ReferenceValue        `json:"source"`
-	Next         *Register
-	Previous     *Register
 }
 
 type RegisterState struct {
@@ -22,8 +21,6 @@ type RegisterState struct {
 	RegisterType metadata.RegisterType
 	Timestamp    time.Time
 	Dimensions   AttributeValues
-	InitialState any
-	Head         *Register
-	FinalState   any
-	Tail         *Register
+	State        AttributeValues
+	Auxiliaries  AttributeValues
 }

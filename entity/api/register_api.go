@@ -10,7 +10,13 @@ import (
 func CommitEvent(eventName string, eventIdentifier string, registers []*entity.Register) error {
 	factoryWriter := storage.CreateRegisterFactory()
 	adapter := factoryWriter.CreateRegisterAdapter()
-	return adapter.Put(eventName, eventIdentifier, registers)
+	for _, register := range registers {
+		error := adapter.RegisterPut(eventName, eventIdentifier, register)
+		if error != nil {
+			return error
+		}
+	}
+	return nil 
 }
 
 func RollbackEvent(eventName string, eventIdentifier string) error {

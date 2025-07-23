@@ -1,1 +1,1 @@
-{"registerName":"RegisterTest","dimensions":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}},"fact":{"number_fact":{"type":"number"}},"granularity":0}
+{"registerName":"RegisterTest","dimensions":{"number_attribute":{"type":"number"},"string_attribute":{"type":"string"}},"facts":null,"auxiliaries":null,"granularity":0}

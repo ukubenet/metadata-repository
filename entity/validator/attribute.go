@@ -23,8 +23,11 @@ func ValidateRegisterValues(registerType metadata.RegisterType, register *entity
 		return err
 	}
 
-	err = validateAttributeValue(register.RegisterName + ".fact", register.Fact, meta.Fact)
-	if err != nil {
+	if err = validateValues(register.Facts, meta.Facts); err != nil {
+		return err
+	}
+
+	if err = validateValues(register.Auxiliaries, meta.Auxiliaries); err != nil {
 		return err
 	}
 

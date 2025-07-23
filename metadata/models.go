@@ -55,7 +55,8 @@ var (
 type RegisterMetadata struct {
 	RegisterName string          `json:"registerName"`
 	Dimensions   Attributes      `json:"dimensions"`
-	Fact         Attribute       `json:"fact"`
+	Facts        Attributes      `json:"facts"`
+	Auxiliaries  Attributes      `json:"auxiliaries"`
 	Granularity  GranularityType `json:"granularity"`
 }
 

@@ -11,6 +11,7 @@ type Entity struct {
 	Identifier   string              `json:"identifier"`
 	Attributes   AttributeValues     `json:"attributes"`
 	Transactions map[string]any      `json:"transactions"`
+	Registers    []*Register         `json:"registers"`
 }
 
 type AttributeValues map[string]any

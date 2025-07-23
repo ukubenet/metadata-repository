@@ -24,7 +24,7 @@ func TestJsonRegisterReader(t *testing.T) {
 	if candidate.Dimensions == nil {
 		t.Fail()
 	}
-	if candidate.Fact == nil {
+	if candidate.Facts == nil {
 		t.Fail()
 	}
 }
@@ -34,14 +34,14 @@ func TestJsonRegisterReplacer(t *testing.T) {
 		"string_attribute": {"type": "string"},
 		"number_attribute": {"type": "number"},
 	}
-	var fact metadata.Attribute = metadata.Attribute{
+	var facts metadata.Attributes = metadata.Attributes{
 		"number_fact": map[string]any{"type": "number"},
 	}
 
 	var candidate *metadata.RegisterMetadata = &metadata.RegisterMetadata{
 		RegisterName: "test/RegisterTest",
 		Dimensions:  dimensions,
-		Fact:        fact,
+		Facts:       facts,
 	}
 
 	inserter.RegisterPut(candidate)

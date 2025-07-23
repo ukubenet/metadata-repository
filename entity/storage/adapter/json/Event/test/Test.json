@@ -1,1 +1,1 @@
-{"entityName":"test","entityType":0,"identifier":"Test","attributes":{"number_attribute":100,"string_attribute":"string"},"transactions":null}
+{"entityName":"test","entityType":0,"identifier":"Test","attributes":{"number_attribute":100,"string_attribute":"string"},"transactions":null,"registers":null}

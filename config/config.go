@@ -7,9 +7,10 @@ import (
 type (
 	AppConfig struct {
 		Deployer struct {
-			Adapter       string `yaml:"adapter"`
-			Path          string `yaml:"path"`
-			Entitysubpath string `yaml:"entitysubpath"`
+			Adapter         string `yaml:"adapter"`
+			Path            string `yaml:"path"`
+			Entitysubpath   string `yaml:"entitysubpath"`
+			Registersubpath string `yaml:"registersubpath"`
 		} `yaml:"deployer"`
 		Metadata struct {
 			Adapter     string `yaml:"metadata"`

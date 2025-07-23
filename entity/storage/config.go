@@ -15,9 +15,22 @@ func get_json_path() string {
 	return path + config.Config.Deployer.Path + "/" + global.AppName + "/" + config.Config.Deployer.Entitysubpath + "/"
 }
 
+func get_register_json_path() string {
+	path, _ := os.Getwd()
+	return path + config.Config.Deployer.Path + "/" + global.AppName + "/" + config.Config.Deployer.Registersubpath + "/"
+}
+
 func getAdapter() interface{} {
 	if config.Config.Deployer.Adapter == JSON_FILE {
 		return adapter.JSON(get_json_path())
+	} else {
+		panic("Undefined adapter!")
+	}
+}
+
+func getRegisterAdapter() interface{} {
+	if config.Config.Deployer.Adapter == JSON_FILE {
+		return adapter.JSON(get_register_json_path())
 	} else {
 		panic("Undefined adapter!")
 	}

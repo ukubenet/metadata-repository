@@ -17,9 +17,12 @@ func TestLocalRegisterDeployer(t *testing.T) {
 	deployer := Local(path)
 
 	// @todo: there is a bug. Register is empty. JUst struct. It does not throw an error that such register does not exist.
-	register, _ := metaapi.ReadRegisterMetadata(metadata.State, "RegisterTest")
-
-	err := deployer.RegisterDeploy(register)
+	register, err := metaapi.ReadRegisterMetadata(metadata.State, "RegisterTest")
+	if err != nil {
+		t.Fatal(err)
+	}
+	
+	err = deployer.RegisterDeploy(register)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -2,6 +2,7 @@ deployer:
     adapter: json_file
     path: ""
     entitysubpath: entity/json
+    registersubpath: register
 
 metadata:
     adapter: json_file

@@ -164,7 +164,7 @@ func PutRegisterMetadata(registerType metadata.RegisterType, registermeta *metad
 	if len(registermeta.Dimensions) == 0 {
 		return errors.New("register dimensions not defined")
 	}
-	if len(registermeta.Fact) == 0 {
+	if len(registermeta.Facts) == 0 {
 		return errors.New("register fact not defined")
 	}
 	// if registermeta.Source.Reference == "" {
