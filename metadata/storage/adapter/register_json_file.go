@@ -9,9 +9,12 @@ import (
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
-
 // Read register metadate from a json file
 func (jc *JSONCodec) RegisterRead(registerName string, candidate *metadata.RegisterMetadata) (err error) {
+	// Ensure the path ends with a slash before appending the register name
+	if jc.path[len(jc.path)-1] != '/' {
+		jc.path += "/"
+	}
 
 	file, err := os.Open(jc.path + registerName + Ext)
 	if err != nil {
@@ -28,7 +31,7 @@ func (jc *JSONCodec) RegisterRead(registerName string, candidate *metadata.Regis
 	jsonParser := json.NewDecoder(file)
 	jsonParser.Decode(candidate)
 
-	return
+	return nil
 }
 
 // Save the register metadata to JSON file

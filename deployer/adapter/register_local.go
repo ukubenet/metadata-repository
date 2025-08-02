@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ukubenet/metadata-repository/metadata"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/ukubenet/metadata-repository/metadata"
 )
 
 const (
@@ -14,7 +14,9 @@ const (
 )
 
 func (local *LocalDeployer) RegisterDeploy(registerMeta *metadata.RegisterMetadata) (err error) {
+	dbPath := local.path + RegisterPath + registerMeta.RegisterName + ".db"
 
+	// Ensure the directory exists
 	dir := local.path + RegisterPath
 	if e := os.MkdirAll(dir, 0755); !os.IsExist(e) {
 		fi, _ := os.Stat(dir)
@@ -22,18 +24,36 @@ func (local *LocalDeployer) RegisterDeploy(registerMeta *metadata.RegisterMetada
 			return e
 		}
 	}
-	createRegisterTable(dir, registerMeta)
 
-	return
+	// Create the SQLite database and tables
+	if err := createRegisterTables(dbPath, registerMeta); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func createRegisterTable(dbPath string, registerMeta *metadata.RegisterMetadata) error {
+func createRegisterTables(dbPath string, registerMeta *metadata.RegisterMetadata) error {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
+	// Create transactions table
+	if err := createTable(db, "transactions", registerMeta.Dimensions, registerMeta.Facts, registerMeta.Auxiliaries); err != nil {
+		return err
+	}
+
+	// Create state table (use Facts directly for now)
+	if err := createTable(db, "state", registerMeta.Dimensions, registerMeta.Facts, registerMeta.Auxiliaries); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func createTable(db *sql.DB, tableName string, dimensions, factsOrStates, auxiliaries metadata.Attributes) error {
 	columnDefs := ""
 
 	addAttributes := func(attrs metadata.Attributes) {
@@ -42,22 +62,33 @@ func createRegisterTable(dbPath string, registerMeta *metadata.RegisterMetadata)
 			if !ok {
 				panic("attribute doesn't have type")
 			}
-			columnDefs += fmt.Sprintf("%s %s,\n", attrName, goTypeToSQLite(attrType.(string)))
+
+			if attrType == metadata.ReferenceType {
+				// ReferenceType columns are strings referring to another entity
+				columnDefs += fmt.Sprintf("%s TEXT,\n", attrName)
+			} else {
+				columnDefs += fmt.Sprintf("%s %s,\n", attrName, goTypeToSQLite(attrType.(string)))
+			}
 		}
 	}
 
-	addAttributes(registerMeta.Dimensions)
-	addAttributes(registerMeta.Auxiliaries)
-	addAttributes(registerMeta.Facts)
+	addAttributes(dimensions)
+	addAttributes(factsOrStates)
+	addAttributes(auxiliaries)
+
+	// Remove trailing comma from column definitions
+	if len(columnDefs) > 0 {
+		columnDefs = columnDefs[:len(columnDefs)-2] // Remove last comma and newline
+	}
 
 	createStmt := fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 		%s
-	);`, registerMeta.RegisterName, columnDefs)
+	);`, tableName, columnDefs)
 
 	fmt.Println("Executing SQL:\n", createStmt)
 
-	_, err = db.Exec(createStmt)
+	_, err := db.Exec(createStmt)
 	return err
 }
 
@@ -74,7 +105,7 @@ func goTypeToSQLite(goType string) string {
 	default:
 		return "TEXT"
 	}
-}	
+}
 
 func (local *LocalDeployer) RegisterDelete(registerMeta *metadata.RegisterMetadata) (err error) {
 
