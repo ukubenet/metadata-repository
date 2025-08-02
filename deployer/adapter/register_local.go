@@ -40,13 +40,27 @@ func createRegisterTables(dbPath string, registerMeta *metadata.RegisterMetadata
 	}
 	defer db.Close()
 
+	// Extract auxiliary columns from reference dimensions
+	auxiliaryColumns := registerMeta.Auxiliaries
+	for name, dimension := range registerMeta.Dimensions {
+		if dimension["type"] == metadata.ReferenceType {
+			refSpecs := dimension["specs"].(metadata.ReferenceSpecs)
+			for _, viewColumn := range refSpecs.View {
+				uniqueColumnName := name + "_" + viewColumn
+				auxiliaryColumns[uniqueColumnName] = map[string]interface{}{
+					"type": metadata.StringType,
+				}
+			}
+		}
+	}
+
 	// Create transactions table
-	if err := createTable(db, "transactions", registerMeta.Dimensions, registerMeta.Facts, registerMeta.Auxiliaries); err != nil {
+	if err := createTable(db, "transactions", registerMeta.Dimensions, registerMeta.Facts, auxiliaryColumns); err != nil {
 		return err
 	}
 
 	// Create state table (use Facts directly for now)
-	if err := createTable(db, "state", registerMeta.Dimensions, registerMeta.Facts, registerMeta.Auxiliaries); err != nil {
+	if err := createTable(db, "state", registerMeta.Dimensions, registerMeta.Facts, auxiliaryColumns); err != nil {
 		return err
 	}
 

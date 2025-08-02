@@ -10,7 +10,6 @@ import (
 	"github.com/ukubenet/metadata-repository/metadata"
 )
 
-
 func TestRegisterDeploy(t *testing.T) {
 	localDeployer := &LocalDeployer{path: "./testdata/"}
 	registerMeta := &metadata.RegisterMetadata{
@@ -87,4 +86,70 @@ func TestRegisterDelete(t *testing.T) {
 	// Verify deletion
 	_, err = os.Stat(dirPath)
 	assert.True(t, os.IsNotExist(err))
+}
+
+func TestRegisterDeployWithReferenceDimensions(t *testing.T) {
+	localDeployer := &LocalDeployer{path: "./testdata/"}
+	registerMeta := &metadata.RegisterMetadata{
+		RegisterName: "test_register_with_reference",
+		Dimensions: metadata.Attributes{
+			"dim1": {
+				"type": metadata.ReferenceType,
+				"specs": metadata.ReferenceSpecs{
+					View: []string{"attr1", "attr2"},
+				},
+			},
+		},
+		Facts: metadata.Attributes{
+			"fact1": {"type": metadata.IntegerType},
+		},
+		Auxiliaries: metadata.Attributes{
+			"aux1": {"type": metadata.BooleanType},
+		},
+	}
+
+	err := localDeployer.RegisterDeploy(registerMeta)
+	assert.NoError(t, err)
+
+	// Verify database and tables
+	dbPath := "./testdata/register/test_register_with_reference.db"
+	_, err = os.Stat(dbPath)
+	assert.NoError(t, err)
+
+	db, err := sql.Open("sqlite3", dbPath)
+	assert.NoError(t, err)
+	defer db.Close()
+
+	// Check transactions table
+	rows, err := db.Query("PRAGMA table_info(transactions)")
+	assert.NoError(t, err)
+	defer rows.Close()
+
+	expectedColumns := map[string]string{
+		"dim1":       "TEXT",
+		"dim1_attr1": "TEXT",
+		"dim1_attr2": "TEXT",
+		"fact1":      "INTEGER",
+		"aux1":       "BOOLEAN",
+	}
+
+	actualColumns := make(map[string]string)
+	for rows.Next() {
+		var (
+			cid        int
+			name       string
+			typeName   string
+			notnull    int
+			defaultVal interface{}
+			pk         int
+		)
+		err = rows.Scan(&cid, &name, &typeName, &notnull, &defaultVal, &pk)
+		assert.NoError(t, err)
+		actualColumns[name] = typeName
+	}
+
+	assert.Equal(t, expectedColumns, actualColumns)
+
+	// Clean up
+	os.RemoveAll("./testdata/")
 }
