@@ -1,0 +1,25 @@
+{
+    "registerName": "RegisterTest",
+    "dimensions": {
+        "entity_id": {
+            "type": "string"
+        },
+        "timestamp": {
+            "type": "dateTime"
+        }
+    },
+    "facts": {
+        "balance": {
+            "type": "number"
+        },
+        "count": {
+            "type": "integer"
+        }
+    },
+    "auxiliaries": {
+        "status": {
+            "type": "string"
+        }
+    },
+    "granularity": 8
+}
