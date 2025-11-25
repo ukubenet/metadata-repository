@@ -14,7 +14,7 @@ const registerFolder = "register"
 
 func get_json_path(entityType metadata.EntityType) string {
 	path, _ := os.Getwd()
-	return path + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Metasubpath + "/" + entityType.String() + "/"
+	return path + "/" + config.Config.Metadata.Path + "/" + global.AppName + "/" + config.Config.Metadata.Metasubpath + "/" + entityType.String() + "/"
 }
 
 func getAdapter(entityType metadata.EntityType) interface{} {

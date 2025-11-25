@@ -10,7 +10,11 @@ import (
 func (app *application) enableCORS(next http.Handler) http.Handler {
 	allowedHeaders := "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization,X-CSRF-Token"
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		origin := r.Header.Get("Origin")
+		// Allow both configurator (3000) and executor (3002) ports
+		if origin == "http://localhost:3000" || origin == "http://localhost:3002" {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+		}
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Headers", allowedHeaders)
 		w.Header().Set("Access-Control-Allow-Credentials", "true")

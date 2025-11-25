@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"net/http"
 	"strings"
 
@@ -57,8 +58,9 @@ func (app *application) getMetadataList(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	parcel := getParcel(w, r)
-	parcel.Encode(http.StatusOK, list)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(list)
 }
 
 func (app *application) getAllAttributeTypes(w http.ResponseWriter, r *http.Request) {

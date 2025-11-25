@@ -1,0 +1,106 @@
+2025/10/06 22:48:44 Starting server on port 4000
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: Found file: Catalog, ext: 
+DEBUG: Found file: Agency.json, ext: .json
+DEBUG: Added to list: Agency
+DEBUG: Found file: Nurse.json, ext: .json
+DEBUG: Added to list: Nurse
+DEBUG: Found file: Patient.json, ext: .json
+DEBUG: Added to list: Patient
+DEBUG: Final list length: 3, contents: [Agency Nurse Patient]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: catalog, list: [Agency Nurse Patient], err: <nil>
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: Found file: Event, ext: 
+DEBUG: Found file: Patient Payment.json, ext: .json
+DEBUG: Added to list: Patient Payment
+DEBUG: Found file: Paycheck.json, ext: .json
+DEBUG: Added to list: Paycheck
+DEBUG: Found file: Visit.json, ext: .json
+DEBUG: Added to list: Visit
+DEBUG: Final list length: 3, contents: [Patient Payment Paycheck Visit]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: event, list: [Patient Payment Paycheck Visit], err: <nil>
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: Found file: Catalog, ext: 
+DEBUG: Found file: Agency.json, ext: .json
+DEBUG: Added to list: Agency
+DEBUG: Found file: Nurse.json, ext: .json
+DEBUG: Added to list: Nurse
+DEBUG: Found file: Patient.json, ext: .json
+DEBUG: Added to list: Patient
+DEBUG: Final list length: 3, contents: [Agency Nurse Patient]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: catalog, list: [Agency Nurse Patient], err: <nil>
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: Found file: Event, ext: 
+DEBUG: Found file: Patient Payment.json, ext: .json
+DEBUG: Added to list: Patient Payment
+DEBUG: Found file: Paycheck.json, ext: .json
+DEBUG: Added to list: Paycheck
+DEBUG: Found file: Visit.json, ext: .json
+DEBUG: Added to list: Visit
+DEBUG: Final list length: 3, contents: [Patient Payment Paycheck Visit]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: event, list: [Patient Payment Paycheck Visit], err: <nil>
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: Found file: Catalog, ext: 
+DEBUG: Found file: Agency.json, ext: .json
+DEBUG: Added to list: Agency
+DEBUG: Found file: Nurse.json, ext: .json
+DEBUG: Added to list: Nurse
+DEBUG: Found file: Patient.json, ext: .json
+DEBUG: Added to list: Patient
+DEBUG: Final list length: 3, contents: [Agency Nurse Patient]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: catalog, list: [Agency Nurse Patient], err: <nil>
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: Found file: Event, ext: 
+DEBUG: Found file: Patient Payment.json, ext: .json
+DEBUG: Added to list: Patient Payment
+DEBUG: Found file: Paycheck.json, ext: .json
+DEBUG: Added to list: Paycheck
+DEBUG: Found file: Visit.json, ext: .json
+DEBUG: Added to list: Visit
+DEBUG: Final list length: 3, contents: [Patient Payment Paycheck Visit]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: event, list: [Patient Payment Paycheck Visit], err: <nil>
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: Found file: Catalog, ext: 
+DEBUG: Found file: Agency.json, ext: .json
+DEBUG: Added to list: Agency
+DEBUG: Found file: Nurse.json, ext: .json
+DEBUG: Added to list: Nurse
+DEBUG: Found file: Patient.json, ext: .json
+DEBUG: Added to list: Patient
+DEBUG: Final list length: 3, contents: [Agency Nurse Patient]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: catalog, list: [Agency Nurse Patient], err: <nil>
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: Found file: Event, ext: 
+DEBUG: Found file: Patient Payment.json, ext: .json
+DEBUG: Added to list: Patient Payment
+DEBUG: Found file: Paycheck.json, ext: .json
+DEBUG: Added to list: Paycheck
+DEBUG: Found file: Visit.json, ext: .json
+DEBUG: Added to list: Visit
+DEBUG: Final list length: 3, contents: [Patient Payment Paycheck Visit]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: event, list: [Patient Payment Paycheck Visit], err: <nil>
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: get_json_path for entityType Event, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Event/
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: JSONCodec.List - path: /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
+DEBUG: Found file: Catalog, ext: 
+DEBUG: Found file: Agency.json, ext: .json
+DEBUG: Added to list: Agency
+DEBUG: Found file: Nurse.json, ext: .json
+DEBUG: Added to list: Nurse
+DEBUG: Found file: Patient.json, ext: .json
+DEBUG: Added to list: Patient
+DEBUG: Final list length: 3, contents: [Agency Nurse Patient]
+DEBUG: getMetadataList - appName: Care Visit Tracker, entityType: catalog, list: [Agency Nurse Patient], err: <nil>
+DEBUG: get_json_path for entityType Catalog, appName 'Care Visit Tracker': /Users/mkuzmyn/ukube/metadata-repository/../data/Care Visit Tracker/metadata/json/Catalog/
